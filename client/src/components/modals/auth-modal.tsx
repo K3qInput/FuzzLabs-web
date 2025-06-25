@@ -24,12 +24,12 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
   const handleGoogleAuth = () => {
     setIsLoading(true);
-    window.location.href = "/api/auth/google";
+    window.location.href = "/api/auth/google/callback";
   };
 
   const handleDiscordAuth = () => {
     setIsLoading(true);
-    window.location.href = "https://discord.com/oauth2/authorize?client_id=1387286733686571039&permissions=0&integration_type=0&scope=bot";
+    window.location.href = "https://discord.com/oauth2/authorize?client_id=1387286733686571039&permissions=0&integration_type=1&scope=bot";
   };
 
   const handleReplitAuth = () => {
