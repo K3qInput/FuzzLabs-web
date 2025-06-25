@@ -117,7 +117,7 @@ export async function setupAuth(app: Express) {
       clientSecret: process.env.DISCORD_CLIENT_SECRET!,
       // This MUST match the Redirect URI in your Discord Developer Portal
       // and the `redirect_uri` in your frontend Discord auth URL.
-      callbackURL: 'https://fuzzlabs.netlify.app/api/auth/discord/callback',
+      callbackURL: 'https://discord.com/oauth2/authorize?client_id=1387286733686571039&response_type=code&redirect_uri=https%3A%2F%2Ffuzzlabs.netlify.app%2Fapi%2Fcallback&scope=email+identify',
       // Scopes for basic user authentication: identify (user details), email (user's email)
       scope: ['identify', 'email']
     },
