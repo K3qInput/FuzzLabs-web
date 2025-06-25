@@ -1,0 +1,470 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(20, 14.3%, 4.1%);
+  --muted: hsl(60, 4.8%, 95.9%);
+  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(20, 14.3%, 4.1%);
+  --border: hsl(20, 5.9%, 90%);
+  --input: hsl(20, 5.9%, 90%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(60, 4.8%, 95.9%);
+  --secondary-foreground: hsl(24, 9.8%, 10%);
+  --accent: hsl(60, 4.8%, 95.9%);
+  --accent-foreground: hsl(24, 9.8%, 10%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(60, 9.1%, 97.8%);
+  --ring: hsl(20, 14.3%, 4.1%);
+  --radius: 0.5rem;
+
+  /* Fuzz Labs Custom Properties */
+  --fuzz-primary: hsl(0, 0%, 4%);
+  --fuzz-secondary: hsl(0, 0%, 12%);
+  --fuzz-accent: hsl(158, 100%, 50%);
+  --fuzz-accent-blue: hsl(207, 100%, 50%);
+  --fuzz-text: hsl(0, 0%, 97%);
+  --fuzz-success: hsl(158, 100%, 50%);
+  --fuzz-warning: hsl(43, 100%, 50%);
+  --fuzz-error: hsl(0, 100%, 67%);
+  --fuzz-gradient-start: hsl(158, 100%, 50%);
+  --fuzz-gradient-end: hsl(207, 100%, 67%);
+}
+
+.dark {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 3.7%, 15.9%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--fuzz-primary);
+    color: var(--fuzz-text);
+    scroll-behavior: smooth;
+  }
+}
+
+/* Fuzz Labs Custom Styles */
+.gradient-text {
+  background: linear-gradient(90deg, var(--fuzz-gradient-start), var(--fuzz-gradient-end));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+}
+
+.btn-primary {
+  background: linear-gradient(90deg, var(--fuzz-gradient-start), var(--fuzz-gradient-end));
+  transition: all 0.3s ease-in-out;
+  color: var(--fuzz-primary);
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 255, 136, 0.25);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  border: 2px solid var(--fuzz-accent);
+  color: var(--fuzz-accent);
+  transition: all 0.3s ease-in-out;
+  font-weight: 600;
+}
+
+.btn-secondary:hover {
+  background-color: var(--fuzz-accent);
+  color: var(--fuzz-primary);
+  box-shadow: 0 5px 15px rgba(0, 255, 136, 0.2);
+}
+
+.btn-google {
+  background-color: hsl(221, 83%, 53%);
+  color: white;
+  transition: all 0.3s ease-in-out;
+}
+
+.btn-google:hover {
+  background-color: hsl(221, 83%, 45%);
+  transform: translateY(-2px);
+}
+
+.btn-discord {
+  background-color: hsl(235, 86%, 65%);
+  color: white;
+  transition: all 0.3s ease-in-out;
+}
+
+.btn-discord:hover {
+  background-color: hsl(235, 86%, 57%);
+  transform: translateY(-2px);
+}
+
+.service-card, .pricing-card, .team-card, .partner-card, .order-card, .admin-card {
+  background-color: var(--fuzz-secondary);
+  border: 1px solid hsl(0, 0%, 16%);
+  transition: all 0.3s ease-in-out;
+  border-radius: 0.75rem;
+}
+
+.service-card:hover, .pricing-card:hover, .team-card:hover, .partner-card:hover, .order-card:hover, .admin-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--fuzz-accent);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+}
+
+.service-card {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  padding: 1.5rem;
+}
+
+.service-card::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  z-index: -1;
+  margin: -2px;
+  border-radius: inherit;
+  background: linear-gradient(120deg, var(--fuzz-gradient-start), var(--fuzz-gradient-end), var(--fuzz-gradient-start));
+  background-size: 200% 200%;
+  animation: gradient-animation 3s ease infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.service-card:hover::before {
+  opacity: 1;
+}
+
+@keyframes gradient-animation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.nav-link {
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+  color: var(--fuzz-accent);
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--fuzz-accent);
+  transition: width 0.3s ease;
+}
+
+.nav-link.active-link {
+  color: var(--fuzz-accent);
+}
+
+.nav-link.active-link::after {
+  width: 100%;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+.floating {
+  animation: floating 4s ease-in-out infinite;
+}
+
+@keyframes floating {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0px); }
+}
+
+.form-input {
+  background-color: var(--fuzz-primary);
+  border: 1px solid hsl(0, 0%, 20%);
+  color: var(--fuzz-text);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--fuzz-accent);
+  box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+}
+
+.form-input:invalid {
+  border-color: var(--fuzz-error);
+}
+
+.status-pending { color: var(--fuzz-warning); }
+.status-processing { color: var(--fuzz-accent); }
+.status-completed { color: var(--fuzz-success); }
+.status-cancelled { color: var(--fuzz-error); }
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background-color: hsl(0, 0%, 20%);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--fuzz-gradient-start), var(--fuzz-gradient-end));
+  transition: width 0.3s ease;
+}
+
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1001;
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem;
+  color: white;
+  font-weight: 500;
+  transform: translateX(400px);
+  transition: transform 0.3s ease;
+  max-width: 350px;
+}
+
+.notification.show {
+  transform: translateX(0);
+}
+
+.notification.success {
+  background-color: var(--fuzz-success);
+  color: var(--fuzz-primary);
+}
+
+.notification.error {
+  background-color: var(--fuzz-error);
+}
+
+.notification.warning {
+  background-color: var(--fuzz-warning);
+  color: var(--fuzz-primary);
+}
+
+.step-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  color: hsl(0, 0%, 40%);
+}
+
+.step.active {
+  color: var(--fuzz-accent);
+}
+
+.step.completed {
+  color: var(--fuzz-success);
+}
+
+.step-number {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: hsl(0, 0%, 20%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.step.active .step-number {
+  background-color: var(--fuzz-accent);
+  color: var(--fuzz-primary);
+}
+
+.step.completed .step-number {
+  background-color: var(--fuzz-success);
+  color: var(--fuzz-primary);
+}
+
+.step-line {
+  width: 50px;
+  height: 2px;
+  background-color: hsl(0, 0%, 20%);
+  margin: 0 1rem;
+}
+
+.step.active .step-line {
+  background-color: var(--fuzz-accent);
+}
+
+.step.completed .step-line {
+  background-color: var(--fuzz-success);
+}
+
+.payment-method {
+  border: 2px solid hsl(0, 0%, 20%);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.payment-method:hover {
+  border-color: var(--fuzz-accent);
+}
+
+.payment-method.selected {
+  border-color: var(--fuzz-accent);
+  background-color: rgba(0, 255, 136, 0.1);
+}
+
+.bg-minecraft {
+  background-image: linear-gradient(rgba(10, 10, 10, 0.8), rgba(31, 31, 31, 0.8)), url('https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+.auth-provider {
+  border: 2px solid hsl(0, 0%, 20%);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.auth-provider:hover {
+  border-color: var(--fuzz-accent);
+  transform: translateY(-2px);
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid hsl(0, 0%, 20%);
+  border-radius: 50%;
+  border-top-color: var(--fuzz-accent);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.dashboard-stat {
+  background: linear-gradient(135deg, var(--fuzz-secondary), hsl(0, 0%, 16%));
+  border: 1px solid hsl(0, 0%, 20%);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.dashboard-stat:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.order-timeline {
+  position: relative;
+  padding-left: 2rem;
+}
+
+.order-timeline::before {
+  content: '';
+  position: absolute;
+  left: 0.75rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: hsl(0, 0%, 20%);
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -0.4rem;
+  top: 0.25rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background-color: hsl(0, 0%, 20%);
+}
+
+.timeline-item.completed::before {
+  background-color: var(--fuzz-success);
+}
+
+.timeline-item.active::before {
+  background-color: var(--fuzz-accent);
+}
+
+.cart-badge {
+  position: absolute;
+  top: -5px;
+  right: -10px;
+  background-color: var(--fuzz-error);
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: bold;
+  display: none;
+}
+
+.cart-badge.show {
+  display: block;
+}
