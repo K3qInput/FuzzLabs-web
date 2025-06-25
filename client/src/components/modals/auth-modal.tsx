@@ -29,7 +29,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
   const handleDiscordAuth = () => {
     setIsLoading(true);
-    window.location.href = "https://discord.com/oauth2/authorize?client_id=1387286733686571039&permissions=0&integration_type=1&scope=bot";
+    window.location.href = "https://discord.com/oauth2/authorize?client_id=1387286733686571039&permissions=8&response_type=code&redirect_uri=https%3A%2F%2Ffuzzlabs.netlify.app%2Fapi%2Fcallback&integration_type=1&scope=bot+identify+guilds.join+email+guilds";
   };
 
   const handleReplitAuth = () => {
