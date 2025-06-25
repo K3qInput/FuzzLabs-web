@@ -49,7 +49,7 @@ export function getSession() {
     tableName: "sessions",
   });
   return session({
-    secret: process.env.SESSION_SECRET!,
+    secret: process.env.SESSION_SECRET || 'fallback-secret-key-for-development',
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
@@ -133,64 +133,72 @@ export async function setupAuth(app: Express) {
   }
 
   // --- DISCORD AUTHENTICATION SETUP ---
-  passport.use('discord', new DiscordStrategy({
-      clientID: process.env.DISCORD_CLIENT_ID!,
-      clientSecret: process.env.DISCORD_CLIENT_SECRET!,
-      // THIS WAS THE PRIMARY FIX:
-      // This MUST be the exact Redirect URI you registered in your Discord Developer Portal
-      // and the `redirect_uri` in your frontend Discord auth URL.
-      callbackURL: 'https://fuzzlabs.netlify.app/api/auth/discord/callback',
-      // Scopes for basic user authentication: identify (user details), email (user's email)
-      scope: ['identify', 'email']
-    },
-    // The verify function for Discord Strategy
-    async (accessToken, refreshToken, profile, done) => {
-      // 'profile' object from Discord will contain user data based on requested scopes.
-      // You'll need to adapt your upsertUser or create a new function if Discord's profile
-      // structure is different from Replit's claims.
-      const userClaims = {
-          sub: profile.id, // Discord user ID
-          email: profile.email,
-          first_name: profile.username, // Using username as first_name
-          last_name: profile.discriminator, // Using discriminator as last_name
-          profile_image_url: profile.avatar ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png` : null,
-          // Add other claims you need/have from Discord profile
-      };
-      const user = {}; // Create a user object for session
-      updateUserSessionFromDiscord(user, profile, accessToken, refreshToken); // Use Discord-specific update
+  if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
+    passport.use('discord', new DiscordStrategy({
+        clientID: process.env.DISCORD_CLIENT_ID,
+        clientSecret: process.env.DISCORD_CLIENT_SECRET,
+        // THIS WAS THE PRIMARY FIX:
+        // This MUST be the exact Redirect URI you registered in your Discord Developer Portal
+        // and the `redirect_uri` in your frontend Discord auth URL.
+        callbackURL: `https://fuzzlabs.netlify.app/api/callback`,
+        // Scopes for basic user authentication: identify (user details), email (user's email)
+        scope: ['identify', 'email']
+      },
+      // The verify function for Discord Strategy
+      async (accessToken, refreshToken, profile, done) => {
+        // 'profile' object from Discord will contain user data based on requested scopes.
+        // You'll need to adapt your upsertUser or create a new function if Discord's profile
+        // structure is different from Replit's claims.
+        const userClaims = {
+            sub: profile.id, // Discord user ID
+            email: profile.email,
+            first_name: profile.username, // Using username as first_name
+            last_name: profile.discriminator, // Using discriminator as last_name
+            profile_image_url: profile.avatar ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png` : null,
+            // Add other claims you need/have from Discord profile
+        };
+        
+        const user = {
+          claims: userClaims,
+          access_token: accessToken,
+          refresh_token: refreshToken,
+          expires_at: Math.floor(Date.now() / 1000) + 3600 // Discord tokens usually last 1 hour
+        };
 
-      await upsertUser(userClaims); // Upsert user to your DB
-      return done(null, user);
-    }
-  ));
+        await upsertUser(userClaims); // Upsert user to your DB
+        return done(null, user);
+      }
+    ));
+  }
 
   // --- GOOGLE AUTHENTICATION SETUP ---
-  passport.use(new GoogleStrategy({
-      clientID: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      callbackURL: 'https://fuzzlabs.netlify.app/api/auth/google/callback', // Your Google callback URL
-      scope: ['profile', 'email'] // Basic scopes for Google authentication
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      const userClaims = {
-        sub: profile.id,
-        email: profile.emails && profile.emails.length > 0 ? profile.emails[0].value : null,
-        firstName: profile.name?.givenName,
-        lastName: profile.name?.familyName,
-        profileImageUrl: profile.photos && profile.photos.length > 0 ? profile.photos[0].value : null,
-      };
-      const user = {};
-      // You might need a separate updateUserSessionFromGoogle if structure differs greatly
-      // For simplicity, let's just assign directly or adapt updateUserSession to handle generic profiles
-      user.claims = userClaims;
-      user.access_token = accessToken;
-      user.refresh_token = refreshToken;
-      user.expires_at = Math.floor(Date.now() / 1000) + 3600; // Google tokens typically last 1 hour
+  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    passport.use(new GoogleStrategy({
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: `https://fuzzlabs.netlify.app/api/auth/google/callback`, // Your Google callback URL
+        scope: ['profile', 'email'] // Basic scopes for Google authentication
+      },
+      async (accessToken, refreshToken, profile, done) => {
+        const userClaims = {
+          sub: profile.id,
+          email: profile.emails && profile.emails.length > 0 ? profile.emails[0].value : null,
+          first_name: profile.name?.givenName,
+          last_name: profile.name?.familyName,
+          profile_image_url: profile.photos && profile.photos.length > 0 ? profile.photos[0].value : null,
+        };
+        const user = {
+          claims: userClaims,
+          access_token: accessToken,
+          refresh_token: refreshToken,
+          expires_at: Math.floor(Date.now() / 1000) + 3600 // Google tokens typically last 1 hour
+        };
 
-      await upsertUser(userClaims);
-      return done(null, user);
-    }
-  ));
+        await upsertUser(userClaims);
+        return done(null, user);
+      }
+    ));
+  }
 
 
   // --- PASSPORT SERIALIZATION/DESERIALIZATION ---
@@ -210,10 +218,64 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/callback", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
-      successReturnToOrRedirect: "/",
-      failureRedirect: "/api/login",
-    })(req, res, next);
+    // Check if this is a Discord OAuth callback
+    if (req.query.code && !req.query.state) {
+      // This looks like a Discord callback, handle it
+      passport.authenticate('discord', {
+        successReturnToOrRedirect: "/dashboard",
+        failureRedirect: "/api/login",
+      })(req, res, next);
+    } else {
+      // Handle Replit Auth callback
+      passport.authenticate(`replitauth:${req.hostname}`, {
+        successReturnToOrRedirect: "/",
+        failureRedirect: "/api/login",
+      })(req, res, next);
+    }
+  });
+
+  // Cross-domain OAuth bridge for Netlify callbacks
+  app.get("/api/oauth/bridge", (req, res) => {
+    const provider = typeof req.query.provider === 'string' ? req.query.provider : '';
+    const code = typeof req.query.code === 'string' ? req.query.code : '';
+    const state = typeof req.query.state === 'string' ? req.query.state : '';
+    const error = typeof req.query.error === 'string' ? req.query.error : '';
+    
+    if (error) {
+      return res.redirect(`/api/login?error=${encodeURIComponent(error)}`);
+    }
+    
+    if (provider === 'discord' && code) {
+      // Create a form that posts to the Discord callback
+      return res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head><title>Authenticating...</title></head>
+        <body>
+          <script>
+            window.location.href = '/api/auth/discord/callback?code=${encodeURIComponent(code)}';
+          </script>
+        </body>
+        </html>
+      `);
+    }
+    
+    if (provider === 'google' && code) {
+      // Create a form that posts to the Google callback
+      return res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head><title>Authenticating...</title></head>
+        <body>
+          <script>
+            window.location.href = '/api/auth/google/callback?code=${encodeURIComponent(code)}';
+          </script>
+        </body>
+        </html>
+      `);
+    }
+    
+    res.redirect('/api/login');
   });
 
   // --- DISCORD AUTH ROUTES ---
