@@ -39,7 +39,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
     const discordClientId = "1387286733686571039"; // Make sure this is YOUR Discord Client ID
     const discordRedirectUri = "https://fuzzlabs.netlify.app/api/auth/discord/callback";
 
-    window.location.href = `https://discord.com/oauth2/authorize?client_id=${discordClientId}&response_type=code&redirect_uri=${encodeURIComponent(discordRedirectUri)}&scope=identify%20email`;
+    window.location.href = `https://discord.com/oauth2/authorize?client_id=1387286733686571039&response_type=code&redirect_uri=https%3A%2F%2Ffuzzlabs.netlify.app%2Fapi%2Fcallback&scope=email+guilds`;
   };
 
   // Redirect to the backend route to initiate Replit OAuth
