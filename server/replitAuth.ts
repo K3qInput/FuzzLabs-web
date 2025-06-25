@@ -1,5 +1,5 @@
 import * as client from "openid-client";
-import { Strategy, type VerifyFunction } from "openid-client/passport";
+import { Strategy, type VerifyFunction } from "openid-client/passport"; // For Replit (OIDC)
 
 import passport from "passport";
 import session from "express-session";
@@ -8,9 +8,18 @@ import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
 
+// NEW: Import the Discord Strategy
+import { Strategy as DiscordStrategy } from 'passport-discord';
+
 if (!process.env.REPLIT_DOMAINS) {
   throw new Error("Environment variable REPLIT_DOMAINS not provided");
 }
+
+// Ensure Discord Client ID and Secret are available
+if (!process.env.DISCORD_CLIENT_ID || !process.env.DISCORD_CLIENT_SECRET) {
+  console.warn("Discord environment variables (DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET) are not fully provided. Discord authentication may not work.");
+}
+
 
 const getOidcConfig = memoize(
   async () => {
@@ -27,7 +36,7 @@ export function getSession() {
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
     conString: process.env.DATABASE_URL,
-    createTableIfMissing: false,
+    createTableIfMissing: false, // Ensure this table is created by your db:push script
     ttl: sessionTtl,
     tableName: "sessions",
   });
@@ -38,8 +47,9 @@ export function getSession() {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === 'production', // Use secure cookies only in production
       maxAge: sessionTtl,
+      sameSite: 'lax', // Important for OAuth flows
     },
   });
 }
@@ -67,40 +77,88 @@ async function upsertUser(
 }
 
 export async function setupAuth(app: Express) {
+  // 'trust proxy' is crucial when deployed behind a proxy like Netlify
   app.set("trust proxy", 1);
   app.use(getSession());
   app.use(passport.initialize());
   app.use(passport.session());
 
+  // --- REPLIT AUTHENTICATION SETUP ---
   const config = await getOidcConfig();
 
-  const verify: VerifyFunction = async (
+  const verifyReplit: VerifyFunction = async ( // Renamed verify to verifyReplit for clarity
     tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers,
     verified: passport.AuthenticateCallback
   ) => {
-    const user = {};
+    const user = {}; // This user object will be serialized into the session
     updateUserSession(user, tokens);
     await upsertUser(tokens.claims());
     verified(null, user);
   };
 
-  for (const domain of process.env
-    .REPLIT_DOMAINS!.split(",")) {
+  for (const domain of process.env.REPLIT_DOMAINS!.split(",")) {
     const strategy = new Strategy(
       {
-        name: `replitauth:${domain}`,
+        name: `replitauth:${domain}`, // Unique name for Replit strategy
         config,
+        // Scopes for Replit Auth as per Replit documentation
         scope: "openid email profile offline_access",
+        // Callback URL for Replit Auth
         callbackURL: `https://${domain}/api/callback`,
       },
-      verify,
+      verifyReplit, // Use the Replit-specific verify function
     );
     passport.use(strategy);
   }
 
-  passport.serializeUser((user: Express.User, cb) => cb(null, user));
-  passport.deserializeUser((user: Express.User, cb) => cb(null, user));
+  // --- DISCORD AUTHENTICATION SETUP ---
+  passport.use('discord', new DiscordStrategy({
+      clientID: process.env.DISCORD_CLIENT_ID!,
+      clientSecret: process.env.DISCORD_CLIENT_SECRET!,
+      // This MUST match the Redirect URI in your Discord Developer Portal
+      // and the `redirect_uri` in your frontend Discord auth URL.
+      callbackURL: 'https://fuzzlabs.netlify.app/api/auth/discord/callback',
+      // Scopes for basic user authentication: identify (user details), email (user's email)
+      scope: ['identify', 'email']
+    },
+    // The verify function for Discord Strategy
+    async (accessToken, refreshToken, profile, done) => {
+      // 'profile' object from Discord will contain user data based on requested scopes.
+      // You'll need to adapt your upsertUser or create a new function if Discord's profile
+      // structure is different from Replit's claims.
+      const userClaims = {
+          sub: profile.id, // Discord user ID
+          email: profile.email,
+          first_name: profile.username, // Using username as first_name
+          last_name: profile.discriminator, // Using discriminator as last_name
+          profile_image_url: `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png`,
+          // Add other claims you need/have from Discord profile
+      };
+      const user = {}; // Create a user object for session
+      updateUserSession(user, { // Adapt updateUserSession or create a new one for Discord
+          claims: userClaims,
+          access_token: accessToken,
+          refresh_token: refreshToken,
+          expires_at: Math.floor(Date.now() / 1000) + 3600 // Example: Discord tokens typically last 1 hour
+      });
 
+      await upsertUser(userClaims); // Upsert user to your DB
+      return done(null, user);
+    }
+  ));
+
+
+  // --- PASSPORT SERIALIZATION/DESERIALIZATION ---
+  passport.serializeUser((user: Express.User, cb) => {
+      // console.log('serializeUser:', user); // Debugging
+      cb(null, user);
+  });
+  passport.deserializeUser((user: Express.User, cb) => {
+      // console.log('deserializeUser:', user); // Debugging
+      cb(null, user as Express.User); // Ensure user is correctly typed
+  });
+
+  // --- REPLIT AUTH ROUTES ---
   app.get("/api/login", (req, res, next) => {
     passport.authenticate(`replitauth:${req.hostname}`, {
       prompt: "login consent",
@@ -115,8 +173,28 @@ export async function setupAuth(app: Express) {
     })(req, res, next);
   });
 
+  // --- DISCORD AUTH ROUTES ---
+  // Route to initiate Discord OAuth flow
+  app.get('/api/auth/discord', passport.authenticate('discord')); // Use 'discord' strategy name
+
+  // Callback route for Discord OAuth
+  app.get('/api/auth/discord/callback',
+      passport.authenticate('discord', { failureRedirect: '/api/login' }), // Use 'discord' strategy name
+      function(req, res) {
+          // Successful Discord authentication, redirect to dashboard or home
+          res.redirect('/dashboard');
+      }
+  );
+
+
+  // --- LOGOUT ROUTE ---
   app.get("/api/logout", (req, res) => {
-    req.logout(() => {
+    req.logout((err) => {
+      if (err) {
+        console.error("Logout error:", err);
+        return res.status(500).send("Logout failed");
+      }
+      // Replit OIDC specific logout
       res.redirect(
         client.buildEndSessionUrl(config, {
           client_id: process.env.REPL_ID!,
@@ -130,8 +208,8 @@ export async function setupAuth(app: Express) {
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
   const user = req.user as any;
 
-  if (!req.isAuthenticated() || !user.expires_at) {
-    return res.status(401).json({ message: "Unauthorized" });
+  if (!req.isAuthenticated() || !user?.expires_at) { // Add optional chaining to user
+    return res.status(401).json({ message: "Unauthorized: Not authenticated or missing expiration" });
   }
 
   const now = Math.floor(Date.now() / 1000);
@@ -141,7 +219,7 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
 
   const refreshToken = user.refresh_token;
   if (!refreshToken) {
-    res.status(401).json({ message: "Unauthorized" });
+    res.status(401).json({ message: "Unauthorized: No refresh token" });
     return;
   }
 
@@ -151,7 +229,8 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     updateUserSession(user, tokenResponse);
     return next();
   } catch (error) {
-    res.status(401).json({ message: "Unauthorized" });
+    console.error("Token refresh failed:", error); // Log the actual error
+    res.status(401).json({ message: "Unauthorized: Token refresh failed" });
     return;
   }
 };
