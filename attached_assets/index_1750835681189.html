@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuzz Labs - Premium Minecraft Services</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0a0a0a;
+            --secondary: #1f1f1f;
+            --accent: #00ff88;
+            --text: #f8f8f8;
+            --gradient-start: #00ff88;
+            --gradient-end: #00aaff;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--primary);
+            color: var(--text);
+            scroll-behavior: smooth;
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            transition: all 0.3s ease-in-out;
+            color: #0a0a0a;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 255, 136, 0.25);
+        }
+        
+        .btn-secondary {
+             background-color: transparent;
+             border: 2px solid var(--accent);
+             color: var(--accent);
+             transition: all 0.3s ease-in-out;
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--accent);
+            color: var(--primary);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.2);
+        }
+
+        .team-card, .pricing-card, .admin-card, .partner-card {
+            background-color: var(--secondary);
+            border: 1px solid #2a2a2a;
+            transition: all 0.3s ease-in-out;
+            border-radius: 0.75rem;
+        }
+
+        .team-card:hover, .pricing-card:hover, .admin-card:hover, .partner-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        /* --- Gradient Border for Service Cards --- */
+        .service-card {
+            background-color: var(--secondary);
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .service-card:hover {
+            transform: translateY(-8px);
+        }
+        
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            z-index: -1;
+            margin: -2px;
+            border-radius: inherit;
+            background: linear-gradient(120deg, var(--gradient-start), var(--gradient-end), var(--gradient-start));
+            background-size: 200% 200%;
+            animation: gradient-animation 3s ease infinite;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .service-card:hover::before {
+            opacity: 1;
+        }
+
+        @keyframes gradient-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .nav-link { position: relative; transition: color 0.3s ease; }
+        .nav-link:hover { color: var(--accent); }
+        .nav-link::after { content: ''; position: absolute; width: 0; height: 2px; bottom: -5px; left: 50%; transform: translateX(-50%); background-color: var(--accent); transition: width 0.3s ease; }
+        .nav-link.active-link { color: var(--accent); }
+        .nav-link.active-link::after { width: 100%; }
+        .nav-link:hover::after { width: 100%; }
+
+        .floating { animation: floating 4s ease-in-out infinite; }
+        @keyframes floating { 0% { transform: translateY(0px); } 50% { transform: translateY(-20px); } 100% { transform: translateY(0px); } }
+
+        .page { display: none; }
+        .page.active { display: block; animation: fadeIn 0.5s ease; }
+
+        .modal-backdrop { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(5px); animation: fadeIn 0.3s ease-in-out; }
+        .modal-content { position: relative; margin: 5% auto; padding: 2rem; width: 90%; max-width: 600px; background-color: var(--secondary); border: 1px solid var(--accent); border-radius: 1rem; box-shadow: 0 20px 40px rgba(0, 255, 136, 0.2); transform: translateY(-50px); animation: slideIn 0.4s forwards ease-out; }
+        #compare-modal .modal-content { max-width: 900px; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .close-button { position: absolute; top: 1rem; right: 1rem; color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; transition: color 0.3s; }
+        .close-button:hover, .close-button:focus { color: var(--text); }
+        
+        .cart-badge { position: absolute; top: -5px; right: -10px; background-color: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px; font-weight: bold; display: none; }
+        
+        .admin-tab { color: #888; border-bottom: 2px solid transparent; transition: all 0.3s ease; }
+        .admin-tab.active-tab { color: var(--accent); border-bottom-color: var(--accent); }
+        .admin-tab-content { display: none; animation: fadeIn 0.5s ease; }
+        .admin-tab-content.active { display: block; }
+
+        .compare-table td, .compare-table th { padding: 0.75rem; text-align: left; }
+        .compare-table thead th { background-color: var(--primary); }
+        .compare-table tbody tr:nth-child(odd) { background-color: var(--primary); }
+        .compare-table .fa-check { color: var(--accent); }
+        .compare-table .fa-times { color: #f44336; }
+
+    
+select#currency-converter {
+  background-color: #1f1f1f !important;
+  color: white !important;
+  border: 1px solid #333 !important;
+  padding: 0.5rem !important;
+  border-radius: 0.375rem !important;
+}
+
+
+/* --- Minecraft-Themed Background Effects --- */
+.bg-minecraft {
+    background-image: url('https://wallpapercave.com/wp/wp9152854.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+.floating-pixel {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    animation: floatUp 10s linear infinite;
+    opacity: 0.8;
+    pointer-events: none;
+}
+
+.floating-pixel img {
+    width: 100%;
+    height: auto;
+    image-rendering: pixelated;
+}
+
+@keyframes floatUp {
+    0% {
+        transform: translateY(100vh) scale(1);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-20vh) scale(0.6);
+        opacity: 0;
+    }
+}
+
+</style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Header & Navigation -->
+    <header class="bg-black/80 backdrop-blur-sm py-4 px-6 sticky top-0 z-50 border-b border-gray-800">
+        <div class="max-w-screen-xl mx-auto flex justify-between items-center">
+            <a href="#" class="flex items-center space-x-2 page-link" data-page="home"><i class="fas fa-cubes text-3xl gradient-text"></i><span class="text-2xl font-bold text-white">Fuzz Labs</span></a>
+            <nav id="main-nav" class="hidden md:flex items-center space-x-6">
+                <a href="#" class="nav-link text-gray-300 page-link active-link" data-page="home">Home</a>
+                <a href="#" class="nav-link text-gray-300 page-link" data-page="services">Services</a>
+                <a href="#" class="nav-link text-gray-300 page-link" data-page="pricing">Pricing</a>
+                <a href="#" class="nav-link text-gray-300 page-link" data-page="team">Our Team</a>
+                <a href="#" class="nav-link text-gray-300 page-link" data-page="partners">Partners</a>
+                <a href="#" class="nav-link text-gray-300 page-link" data-page="contact">Contact</a>
+                <a href="#" id="admin-nav-link" class="nav-link text-gray-300 page-link hidden" data-page="admin">Admin</a>
+            </nav>
+            <div class="hidden md:flex items-center space-x-4">
+                <button id="cart-btn" class="relative text-2xl text-gray-300 hover:text-accent transition"><i class="fas fa-shopping-cart"></i><span id="cart-badge" class="cart-badge">0</span></button>
+                <div class="flex items-center bg-secondary border border-gray-700 rounded-lg"><i class="fas fa-dollar-sign text-accent pl-3"></i><select id="currency-converter" class="bg-transparent text-white text-sm rounded-lg focus:ring-accent focus:border-accent block w-full p-2.5 border-0"><option selected value="USD">USD</option><option value="EUR">EUR</option><option value="GBP">GBP</option><option value="INR">INR</option></select></div>
+                <div id="auth-buttons"><button id="login-btn" class="btn-secondary font-bold py-2 px-6 rounded-full text-sm"><i class="fas fa-user mr-2"></i>Login</button><button id="logout-btn" class="btn-secondary font-bold py-2 px-6 rounded-full text-sm hidden"><i class="fas fa-sign-out-alt mr-2"></i>Logout</button></div>
+            </div>
+            <button id="menu-toggle" class="md:hidden text-white focus:outline-none"><i class="fas fa-bars text-2xl"></i></button>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-secondary py-4 px-6 absolute left-0 right-0 top-[73px] border-t border-gray-800">
+            <div class="flex flex-col space-y-4">
+                 <a href="#" class="nav-link text-white page-link" data-page="home">Home</a>
+                 <a href="#" class="nav-link text-white page-link" data-page="services">Services</a>
+                 <a href="#" class="nav-link text-white page-link" data-page="pricing">Pricing</a>
+                 <a href="#" class="nav-link text-white page-link" data-page="team">Our Team</a>
+                 <a href="#" class="nav-link text-white page-link" data-page="partners">Partners</a>
+                 <a href="#" class="nav-link text-white page-link" data-page="contact">Contact</a>
+                 <a href="#" id="admin-nav-link-mobile" class="nav-link text-white page-link hidden" data-page="admin">Admin</a>
+                 <button id="login-btn-mobile" class="w-full mt-4 btn-secondary font-bold py-2 px-6 rounded-full">Login</button>
+                 <button id="logout-btn-mobile" class="w-full mt-4 btn-secondary font-bold py-2 px-6 rounded-full hidden">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section id="home" class="page active bg-minecraft">
+            <div class="py-24 px-6 bg-gradient-to-b from-primary to-secondary"><div class="max-w-screen-xl mx-auto grid md:grid-cols-2 gap-12 items-center"><div class="text-center md:text-left"><h1 class="text-5xl md:text-7xl font-extrabold mb-6 leading-tight"><span class="gradient-text">Ultimate Minecraft</span><br>Server Solutions</h1><p class="text-xl text-gray-300 mb-8 max-w-xl mx-auto md:mx-0">From world-class server setups to stunning custom assets, Fuzz Labs is your one-stop shop for Minecraft excellence.</p><div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start"><a href="#" class="btn-primary font-bold py-4 px-8 rounded-full text-lg page-link" data-page="services">Explore Services <i class="fas fa-arrow-right ml-2"></i></a><a href="https://discord.gg/t3TB5nYvJT" target="_blank" class="btn-secondary font-bold py-4 px-8 rounded-full text-lg">Join Discord <i class="fab fa-discord ml-2"></i></a></div></div><div class="flex justify-center floating"><img src="https://placehold.co/600x500/0a0a0a/00ff88?text=Fuzz+Labs+3D" alt="Minecraft server showcase" class="rounded-2xl shadow-2xl shadow-accent/10 border-2 border-secondary"></div></div></div>
+        </section>
+        <section id="services" class="page py-20 px-6 bg-primary">
+            <div class="max-w-screen-xl mx-auto">
+                <div class="text-center mb-16"><h1 class="text-4xl md:text-5xl font-bold mb-4">Our Comprehensive <span class="gradient-text">Services</span></h1><p class="text-lg text-gray-400 max-w-4xl mx-auto">Build your perfect server package. Add services to your cart and checkout via Discord.</p></div>
+                <div id="services-grid" class="space-y-16"></div>
+            </div>
+        </section>
+        <section id="pricing" class="page py-20 px-6 bg-secondary">
+            <div class="max-w-screen-xl mx-auto">
+                <div class="text-center mb-16">
+                    <h1 class="text-4xl md:text-5xl font-bold mb-4">Flexible <span class="gradient-text">Pricing</span></h1>
+                    <p class="text-lg text-gray-400 max-w-3xl mx-auto">Choose a plan that fits your budget and ambitions. All prices in <span id="currency-symbol">USD</span>.</p>
+                </div>
+                <div id="pricing-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch"></div>
+                <div class="text-center mt-12">
+                    <button id="compare-plans-btn" class="btn-primary font-bold py-3 px-8 rounded-full">Compare Plans</button>
+                </div>
+            </div>
+        </section>
+        <section id="team" class="page py-20 px-6 bg-primary">
+             <div class="max-w-screen-xl mx-auto">
+                <div class="text-center mb-16"><h1 class="text-4xl md:text-5xl font-bold mb-4">Meet the <span class="gradient-text">Fuzz Labs Team</span></h1><p class="text-lg text-gray-400 max-w-3xl mx-auto">The passionate experts dedicated to bringing your Minecraft vision to life.</p></div>
+                <div id="team-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+            </div>
+        </section>
+        <section id="partners" class="page py-20 px-6 bg-secondary">
+            <div class="max-w-screen-xl mx-auto">
+                <div class="text-center mb-16">
+                    <h1 class="text-4xl md:text-5xl font-bold mb-4">Our <span class="gradient-text">Partners</span></h1>
+                    <p class="text-lg text-gray-400 max-w-3xl mx-auto">We're proud to collaborate with industry-leading companies to provide the best services.</p>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 items-center">
+                    <div class="partner-card p-6 flex justify-center items-center h-40"><img src="https://placehold.co/200x100/1f1f1f/00ff88?text=Edtify" alt="Edtify Logo" class="max-h-16"></div>
+                    <div class="partner-card p-6 flex justify-center items-center h-40"><img src="https://placehold.co/200x100/1f1f1f/00ff88?text=Lodestone" alt="Lodestone Logo" class="max-h-16"></div>
+                    <div class="partner-card p-6 flex justify-center items-center h-40"><img src="https://placehold.co/200x100/1f1f1f/00ff88?text=Cstudios" alt="Cstudios Logo" class="max-h-16"></div>
+                    <div class="partner-card p-6 flex justify-center items-center h-40"><img src="https://placehold.co/200x100/1f1f1f/00ff88?text=Anycastedsdb" alt="Anycastedsdb Logo" class="max-h-16"></div>
+                    <div class="partner-card p-6 flex justify-center items-center h-40"><img src="https://placehold.co/200x100/1f1f1f/00ff88?text=Sryzen" alt="Sryzen Logo" class="max-h-16"></div>
+                    <div class="partner-card p-6 flex justify-center items-center h-40"><img src="https://placehold.co/200x100/1f1f1f/00ff88?text=Sterix" alt="Sterix Logo" class="max-h-16"></div>
+                </div>
+            </div>
+        </section>
+        <section id="contact" class="page py-20 px-6 bg-primary">
+            <div class="max-w-screen-xl mx-auto"><div class="text-center mb-16"><h1 class="text-4xl md:text-5xl font-bold mb-4">Get In <span class="gradient-text">Touch</span></h1><p class="text-lg text-gray-400 max-w-3xl mx-auto">Have a question or ready to start a project? We're here to help.</p></div><div class="grid md:grid-cols-2 gap-12 bg-secondary p-10 rounded-2xl border border-gray-800"><div class="flex flex-col justify-center"><h2 class="text-3xl font-bold mb-6">Contact Information</h2><p class="text-gray-300 mb-8">Reach out directly via email or join our Discord community for a faster response. We're available 24/7 to assist you.</p><div class="space-y-6"><a href="mailto:contact@fuzzlabs.pro" class="flex items-center group"><div class="w-14 h-14 bg-gray-800 group-hover:bg-accent rounded-full flex items-center justify-center mr-5 transition-colors"><i class="fas fa-envelope text-2xl text-accent group-hover:text-primary transition-colors"></i></div><div><h4 class="font-bold text-lg">Email Us</h4><p class="text-gray-400 group-hover:text-accent transition-colors">contact@fuzzlabs.pro</p></div></a><a href="https://discord.gg/t3TB5nYvJT" target="_blank" class="flex items-center group"><div class="w-14 h-14 bg-gray-800 group-hover:bg-accent rounded-full flex items-center justify-center mr-5 transition-colors"><i class="fab fa-discord text-2xl text-accent group-hover:text-primary transition-colors"></i></div><div><h4 class="font-bold text-lg">Join Discord</h4><p class="text-gray-400 group-hover:text-accent transition-colors">fuzzlabs/support</p></div></a></div></div><form id="contact-form" class="bg-secondary rounded-xl p-8 border border-gray-700"><div class="mb-5"><label for="name" class="block text-gray-300 mb-2 font-semibold">Your Name</label><input type="text" id="name" name="name" class="w-full bg-gray-800 border-2 border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition" required></div><div class="mb-5"><label for="email" class="block text-gray-300 mb-2 font-semibold">Email Address</label><input type="email" id="email" name="email" class="w-full bg-gray-800 border-2 border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition" required></div><div class="mb-5"><label for="service-select" class="block text-gray-300 mb-2 font-semibold">Service of Interest</label><select id="service-select" name="service" class="w-full bg-gray-800 border-2 border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition"><option>Full Server Setup</option><option>Custom Assets</option><option>Plugin Development</option><option>Marketing & Promotion</option><option>Other / Custom Request</option></select></div><div class="mb-6"><label for="message" class="block text-gray-300 mb-2 font-semibold">Your Message</label><textarea id="message" name="message" rows="5" class="w-full bg-gray-800 border-2 border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition" required></textarea></div><button type="submit" class="w-full btn-primary font-bold py-3 px-6 rounded-full text-lg">Send Message</button></form></div></div>
+        </section>
+        <section id="admin" class="page py-20 px-6 bg-secondary">
+            <div class="max-w-screen-xl mx-auto">
+                <div class="text-center mb-16"><h1 class="text-4xl md:text-5xl font-bold mb-4">Admin <span class="gradient-text">Dashboard</span></h1><p class="text-lg text-gray-400 max-w-3xl mx-auto">Manage your site's content in real-time.</p></div>
+                <div class="mb-8 flex justify-center border-b border-gray-700"><button class="admin-tab active-tab py-4 px-6 text-lg font-semibold" data-tab="pricing">Pricing Packages</button><button class="admin-tab py-4 px-6 text-lg font-semibold" data-tab="services">Services</button><button class="admin-tab py-4 px-6 text-lg font-semibold" data-tab="team">Team Members</button></div>
+                <div id="admin-pricing" class="admin-tab-content active grid grid-cols-1 lg:grid-cols-3 gap-8"></div>
+                <div id="admin-services" class="admin-tab-content"><div id="admin-services-forms" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div></div>
+                <div id="admin-team" class="admin-tab-content"><div id="admin-team-forms" class="space-y-6"></div><button id="add-team-member-btn" class="mt-8 btn-primary font-bold py-3 px-6 rounded-full">Add New Team Member</button></div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-primary text-gray-400 py-12 px-6"><div class="max-w-screen-xl mx-auto"><div class="grid grid-cols-1 md:grid-cols-4 gap-8"><div class="md:col-span-1"><div class="flex items-center space-x-2 mb-4"><i class="fas fa-cubes text-3xl gradient-text"></i><span class="text-2xl font-bold text-white">Fuzz Labs</span></div><p class="text-sm">The leading provider of premium Minecraft server solutions since 2018.</p></div><div><h5 class="font-bold text-white mb-4">Quick Links</h5><ul class="space-y-2 text-sm"><li><a href="#" class="hover:text-accent transition page-link" data-page="home">Home</a></li><li><a href="#" class="hover:text-accent transition page-link" data-page="services">Services</a></li><li><a href="#" class="hover:text-accent transition page-link" data-page="pricing">Pricing</a></li><li><a href="#" class="hover:text-accent transition page-link" data-page="team">Our Team</a></li></ul></div><div><h5 class="font-bold text-white mb-4">Legal</h5><ul class="space-y-2 text-sm"><li><a href="#" class="hover:text-accent transition">Terms of Service</a></li><li><a href="#" class="hover:text-accent transition">Privacy Policy</a></li></ul></div><div><h5 class="font-bold text-white mb-4">Connect</h5><div class="flex space-x-4 text-2xl"><a href="https://discord.gg/t3TB5nYvJT" target="_blank" class="hover:text-accent transition"><i class="fab fa-discord"></i></a><a href="#" class="hover:text-accent transition"><i class="fab fa-twitter"></i></a><a href="#" class="hover:text-accent transition"><i class="fab fa-youtube"></i></a></div></div></div><div class="mt-10 pt-8 border-t border-gray-800 text-center text-sm"><p>&copy; 2024 Fuzz Labs. All Rights Reserved. We are not affiliated with Mojang AB.</p></div></div></footer>
+    
+    <!-- Modals -->
+    <div id="auth-modal" class="modal-backdrop"><div class="modal-content"><span id="close-modal-btn" class="close-button">&times;</span><div id="login-view"><div class="text-center"><h2 class="text-3xl font-bold mb-2 gradient-text">Admin Login</h2><p class="text-gray-400 mb-8">Enter your credentials to access the dashboard.</p></div><form id="login-form"><div class="mb-4"><label for="login-email" class="block text-gray-300 mb-2 font-semibold">Username</label><input type="text" id="login-user" class="w-full bg-gray-800 border-2 border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-accent transition" placeholder="Username"></div><div class="mb-6"><label for="login-password" class="block text-gray-300 mb-2 font-semibold">Password</label><input type="password" id="login-password" class="w-full bg-gray-800 border-2 border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-accent transition" placeholder="••••••••"></div><p id="login-error" class="text-red-500 text-sm mb-4 text-center hidden">Invalid username or password.</p><button type="submit" class="w-full btn-primary font-bold py-3 px-6 rounded-full text-lg mb-4">Sign In</button></form></div></div></div>
+    <div id="cart-modal" class="modal-backdrop"><div class="modal-content"><span id="close-cart-btn" class="close-button">&times;</span><div class="text-center"><h2 class="text-3xl font-bold mb-2 gradient-text">Your Cart</h2></div><div id="cart-items-container" class="my-6 max-h-[60vh] overflow-y-auto pr-2"></div><div class="border-t border-gray-700 pt-4"><div class="flex justify-between items-center text-xl font-bold"><span>Total:</span><span id="cart-total"></span></div><a href="https://discord.gg/t3TB5nYvJT" target="_blank" class="block text-center w-full mt-6 btn-primary font-bold py-3 px-6 rounded-full text-lg">Checkout on Discord</a></div></div></div>
+    <div id="compare-modal" class="modal-backdrop">
+        <div class="modal-content">
+            <span id="close-compare-btn" class="close-button">&times;</span>
+            <div class="text-center"><h2 class="text-3xl font-bold mb-4 gradient-text">Compare Our Plans</h2></div>
+            <div class="overflow-x-auto">
+                <table id="compare-table" class="w-full text-sm md:text-base compare-table rounded-lg overflow-hidden">
+                    <!-- Compare table content will be generated by JS -->
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- DATA STORE ---
+        let siteData = {
+            
+
+
+plans: [
+    { id: 'starter', name: "Basic Server Setup", price: 45, features: [
+        "Essential Plugins",
+        "Basic Server Type (Factions, Lifesteal, Skyblock)",
+        "Basic Discord Setup",
+        "Basic Support Access (72h SLA)",
+        "Limited Customization (Not Included)",
+        "No Branding (Not Included)",
+        "No Website (Not Included)",
+        "No Store Setup (Not Included)",
+        "No Account Manager (Not Included)",
+        "No Custom Assets (Not Included)"
+    ] },
+    { id: 'advance', name: "Advanced Server Setup", price: 70, features: [
+        "Essential Plugins",
+        "All Popular Game Modes",
+        "Standard Discord & Store Setup",
+        "Custom Plugin Configurations",
+        "Priority Support (48h SLA)",
+        "Partial Branding Support",
+        "No Website (Not Included)",
+        "Limited Custom Assets",
+        "No Account Manager (Not Included)"
+    ] },
+    { id: 'pro', name: "Professional Server Setup", price: 120, features: [
+        "Essential Plugins",
+        "All Game Modes Supported",
+        "Premium Discord & Tebex Store Setup",
+        "Custom Plugin Configurations",
+        "1-on-1 Support (24h SLA)",
+        "Full Branding & Website Included",
+        "Custom Assets & UI Design",
+        "Dedicated Account Manager",
+        "Marketing Guidance Included",
+        "Monetization Strategy Included"
+    ] },
+    { id: 'custom', name: "Custom Plan", price: 0, features: [
+        "Fully Tailored Setup",
+        "Unlimited Features & Services",
+        "1-on-1 Consultation",
+        "Custom Game Modes & Mechanics",
+        "Premium Branding & UI/UX",
+        "Ongoing Support & Strategy",
+        "Custom Budget & Timeline"
+    ] }
+],
+
+
+
+            services: {
+                "Server Promotions": [
+                    { id: 1, name: "Premium Server Listings", desc: "Website + Discord listings.", price: 8 },
+                    { id: 2, name: "Paid Promotions", desc: "Discord ping, featured listing, or banner ad.", price: 7 },
+                ],
+                "Design & Assets": [
+                    { id: 3, name: "Logo Design", desc: "A custom logo for your server.", price: 8 },
+                    { id: 4, name: "Banner Design", desc: "A custom banner for your server.", price: 8 },
+                    { id: 5, name: "UI Design", desc: "Custom UI elements for your server.", price: 10 },
+                    { id: 6, name: "Resource Packs", desc: "Custom resource packs.", price: 10 },
+                ],
+                "Map Building": [
+                    { id: 7, name: "Small Map (100x100)", desc: "A compact, detailed build.", price: 10 },
+                    { id: 8, name: "Medium Map (300x300)", desc: "A larger, more intricate build.", price: 25 },
+                    { id: 9, name: "Large Map (750x750)", desc: "A massive, epic-scale world.", price: 40 },
+                ],
+                "Server Trailers": [ { id: 10, name: "60s 2D/3D Animation", desc: "Pricing via Editify (contact us for a quote).", price: 0 } ],
+                "Plugin & Store Setups": [
+                    { id: 11, name: "Basic Plugin Setup", desc: "Essentials & Permissions configuration.", price: 8 },
+                    { id: 12, name: "Premium Plugin Setup", desc: "Custom configs and extra plugins.", price: 15 },
+                    { id: 15, name: "Basic Store Setup", desc: "Tebex / CraftingStore integration.", price: 8 },
+                    { id: 16, name: "Premium Store Setup", desc: "Advanced integration and design.", price: 25 },
+                ],
+                "Website & Discord": [
+                    { id: 17, name: "Website Design", desc: "Static, React, or CMS-based websites.", price: 40 },
+                    { id: 18, name: "Lodestone Hosting", desc: "Custom plans available, contact us.", price: 0 },
+                    { id: 19, name: "Basic Discord Setup", desc: "Basic channels and roles.", price: 5 },
+                    { id: 20, name: "Premium Discord Setup", desc: "Bots, permissions, and full structure.", price: 10 },
+                ],
+                "Branding & Marketing": [
+                   { id: 21, name: "Basic Branding Package", desc: "Theme, color palette, and logo pack.", price: 20 },
+                   { id: 22, name: "Premium Branding Package", desc: "Full branding identity creation.", price: 40 },
+                   { id: 23, name: "Basic Marketing & SEO", desc: "Forum posts, Discord ads, backlinks.", price: 60 },
+                   { id: 24, name: "Premium Marketing & SEO", desc: "Advanced campaigns + SEO support.", price: 85 },
+                ],
+                "Staff & Server Management": [
+                    { id: 25, name: "Basic Staff Recruitment", desc: "Forms and initial screening.", price: 8 },
+                    { id: 26, name: "Premium Staff Recruitment", desc: "Includes interviews and hiring process.", price: 15 },
+                    { id: 27, name: "Basic Staff Docs", desc: "SOPs and training guides.", price: 5 },
+                    { id: 28, name: "Premium Staff Docs", desc: "Full management documentation.", price: 10 },
+                    { id: 29, name: "Basic Server Management", desc: "Weekly maintenance & events. (Billed Monthly)", price: 8 },
+                    { id: 30, name: "Premium Server Management", desc: "Extensive weekly maintenance. (Billed Monthly)", price: 20 },
+                    { id: 31, name: "Basic Bug Fixes", desc: "Lag, plugin fixes, TPS. (Billed Monthly)", price: 8 },
+                    { id: 32, name: "Premium Bug Fixes", desc: "Advanced optimization. (Billed Monthly)", price: 20 },
+                ],
+                "Monetization & Freelancers": [
+                    { id: 33, name: "Basic Monetization Setup", desc: "Ranks, crates, and boosters.", price: 8 },
+                    { id: 34, name: "Premium Monetization Setup", desc: "Advanced economy balancing.", price: 10 },
+                    { id: 35, name: "On-Demand Freelancer", desc: "Builders, devs, artists, etc. (Service Fee)", price: 5 },
+                ],
+                "Creator Packages": [
+                   { id: 36, name: "Basic Creator Package", desc: "5 verified team members. (Billed Monthly)", price: 40 },
+                   { id: 37, name: "Premium Creator Package", desc: "10 verified team members. (Billed Monthly)", price: 80 },
+                ],
+                "Coming Soon": [ { id: 38, name: "Subscriptions & Maintenance", desc: "Monthly support and bundle discounts.", price: 0 } ]
+            },
+            team: [
+                { id: 1, name: "Fuzz", role: "CEO", desc: "The visionary behind Fuzz Labs, driving the mission to empower server owners with top-tier tools and services.", img: "https://cdn.discordapp.com/avatars/1283059548076118105/c489672ca14effc78d36b9d27fbfc02e.png?size=1024" },
+                { id: 2, name: "Eda", role: "CMO", desc: "Eda spearheads our marketing strategies, ensuring Fuzz Labs reaches server owners globally.", img: "https://cdn.discordapp.com/avatars/760153843547242506/720f1b002fb5125a7bed52a9f24c0700.png?size=1024" },
+                { id: 3, name: "Leroy", role: "CFO", desc: "Leroy manages the financial health of Fuzz Labs, ensuring sustainable growth and value for our clients.", img: "https://cdn.discordapp.com/avatars/1002293564782411787/876c42998102b997b68d896a9bf794c5.png?size=1024" },
+                { id: 4, name: "Kiro", role: "CTO", desc: "Kiro leads our technology division, pioneering new tools and optimizing server performance.", img: "https://cdn.discordapp.com/avatars/1129755081416388750/8ac8d8faa01acfd45c566464dcf69812.png?size=1024" },
+                { id: 5, name: "Aneesh", role: "COO", desc: "Aneesh oversees daily operations, ensuring every project is delivered efficiently and to the highest standard.", img: "https://cdn.discordapp.com/avatars/1154095936033796226/1176be58c7788ea518a65ff628467a62.png?size=1024" },
+                { id: 6, name: "Ashton", role: "CMO", desc: "Ashton co-leads marketing, focusing on brand management and community engagement.", img: "https://cdn.discordapp.com/avatars/734300187979153449/d57a8af16121299b9d0445c1cb0bf274.png?size=1024" }
+            ]
+        };
+        let cart = [];
+        let isAdmin = false;
+        const exchangeRates = { USD: 1, EUR: 0.93, GBP: 0.79, INR: 83.30 };
+        const currencySymbols = { USD: '$', EUR: '€', GBP: '£', INR: '₹' };
+
+        const renderAll = () => {
+            renderServices();
+            renderTeam();
+            renderPricingPlans();
+            renderAdminForms();
+            renderCompareTable();
+            updatePrices();
+            updateCart();
+        };
+
+        const renderServices = () => {
+            const container = document.getElementById('services-grid');
+            container.innerHTML = Object.entries(siteData.services).map(([category, services]) => `
+                <div class="service-category">
+                    <h2 class="text-3xl font-bold mb-8 border-l-4 border-accent pl-4">${category}</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        ${services.map(service => `
+                            <div class="service-card flex flex-col"><div class="flex-grow"><h3 class="text-xl font-bold mb-2">${service.name}</h3><p class="text-gray-400 mb-4">${service.desc}</p></div><div class="mt-auto flex justify-between items-center"><p class="text-2xl font-bold gradient-text service-price" data-price-usd="${service.price}"></p><button class="btn-secondary py-2 px-4 rounded-lg add-to-cart-btn" data-id="${service.id}" ${service.price === 0 ? 'disabled' : ''}>${service.price === 0 ? 'Contact Us' : 'Add to Cart'}</button></div></div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        };
+        
+        const renderTeam = () => {
+            document.getElementById('team-grid').innerHTML = siteData.team.map(member => `
+                <div class="team-card text-center p-8"><img src="${member.img}" alt="${member.name}" class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-accent shadow-lg" onerror="this.onerror=null;this.src='https://placehold.co/150x150/0a0a0a/ffffff?text=${member.name[0]}';"><h3 class="text-2xl font-bold">${member.name}</h3><p class="text-accent font-semibold mb-2">${member.role}</p><p class="text-gray-400 mb-4">${member.desc}</p></div>
+            `).join('');
+        };
+        
+        const renderPricingPlans = () => {
+            document.getElementById('pricing-grid').innerHTML = siteData.plans.map(plan => `
+                <div id="plan-${plan.id}" class="pricing-card p-8 flex flex-col ${plan.id === 'pro' ? 'border-2 border-accent' : ''} relative">
+                    <h3 class="text-2xl font-bold mb-2 plan-name">${plan.name}</h3>
+                    <p class="text-gray-400 mb-6">For servers aiming for the top.</p>
+                    <div class="text-5xl font-bold mb-6 plan-price" data-price-usd="${plan.price}"></div>
+                    <ul class="space-y-3 mb-8 flex-grow plan-features">${plan.features.map(f => `<li class="flex items-center"><i class="fas ${f.includes('(Not Included)') ? 'fa-times-circle text-red-500' : 'fa-check-circle text-accent'} mr-3"></i>${f.replace(' (Not Included)', '')}</li>`).join('')}</ul>
+                    <a href="https://discord.gg/t3TB5nYvJT" target="_blank" class="w-full text-center ${plan.id === 'pro' ? 'btn-primary' : 'btn-secondary'} font-bold py-3 px-6 rounded-full mt-auto">Choose Plan</a>
+                    ${plan.id === 'pro' ? '<div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-accent text-primary text-sm font-bold px-4 py-1 rounded-full">MOST POPULAR</div>' : ''}
+                </div>
+            `).join('');
+        };
+
+        const renderCompareTable = () => {
+            const allFeatures = [...new Set(siteData.plans.flatMap(p => p.features.map(f => f.replace(' (Not Included)', ''))))];
+            const table = document.getElementById('compare-table');
+            const planNames = siteData.plans.map(p => p.name);
+            let headHTML = '<thead><tr><th class="w-1/3">Feature</th>';
+            planNames.forEach(name => headHTML += `<th class="text-center">${name}</th>`);
+            headHTML += '</tr></thead>';
+
+            let bodyHTML = '<tbody>';
+            allFeatures.forEach(feature => {
+                bodyHTML += `<tr><td>${feature}</td>`;
+                siteData.plans.forEach(plan => {
+                    const hasFeature = plan.features.some(f => f.replace(' (Not Included)', '') === feature && !f.includes('(Not Included)'));
+                    bodyHTML += `<td class="text-center"><i class="fas ${hasFeature ? 'fa-check' : 'fa-times'}"></i></td>`;
+                });
+                bodyHTML += '</tr>';
+            });
+            bodyHTML += '</tbody>';
+            table.innerHTML = headHTML + bodyHTML;
+        };
+
+        const renderAdminForms = () => {
+            document.getElementById('admin-pricing').innerHTML = siteData.plans.map(plan => `
+                <form class="admin-card p-8 space-y-4" data-id="${plan.id}" data-type="plan"><h3 class="text-2xl font-bold gradient-text">${plan.name}</h3><div><label class="font-semibold">Plan Name</label><input type="text" class="admin-input mt-1 w-full bg-gray-800 border-2 border-gray-700 rounded-lg p-2" name="name" value="${plan.name}"></div><div><label class="font-semibold">Price (USD)</label><input type="number" class="admin-input mt-1 w-full bg-gray-800 border-2 border-gray-700 rounded-lg p-2" name="price" value="${plan.price}"></div><div><label class="font-semibold">Features (one per line)</label><textarea rows="5" class="admin-input mt-1 w-full bg-gray-800 border-2 border-gray-700 rounded-lg p-2" name="features">${plan.features.join('\n')}</textarea></div><button type="submit" class="w-full btn-primary font-bold py-2 px-4 rounded-full">Save Changes</button></form>`).join('');
+            document.getElementById('admin-services-forms').innerHTML = Object.values(siteData.services).flat().map(service => `
+                <form class="admin-card p-6 space-y-3" data-id="${service.id}" data-type="service"><h4 class="text-lg font-bold gradient-text truncate">${service.name}</h4><div><label class="font-semibold text-sm">Service Name</label><input type="text" class="admin-input mt-1 w-full bg-gray-800 border border-gray-700 rounded-lg p-2" name="name" value="${service.name}"></div><div><label class="font-semibold text-sm">Description</label><textarea rows="3" class="admin-input mt-1 w-full bg-gray-800 border border-gray-700 rounded-lg p-2" name="desc">${service.desc}</textarea></div><div><label class="font-semibold text-sm">Price (USD)</label><input type="number" class="admin-input mt-1 w-full bg-gray-800 border border-gray-700 rounded-lg p-2" name="price" value="${service.price}"></div><button type="submit" class="w-full btn-primary font-bold py-2 px-4 rounded-full text-sm">Save</button></form>`).join('');
+            document.getElementById('admin-team-forms').innerHTML = siteData.team.map(member => `
+                <form class="admin-card p-6 grid grid-cols-1 md:grid-cols-2 gap-4 items-end" data-id="${member.id}" data-type="team"><div><label class="font-semibold text-sm">Name</label><input type="text" class="admin-input mt-1 w-full bg-gray-800 border border-gray-700 rounded-lg p-2" name="name" value="${member.name}"></div><div><label class="font-semibold text-sm">Role</label><input type="text" class="admin-input mt-1 w-full bg-gray-800 border border-gray-700 rounded-lg p-2" name="role" value="${member.role}"></div><div class="md:col-span-2"><label class="font-semibold text-sm">Description</label><textarea rows="2" class="admin-input mt-1 w-full bg-gray-800 border border-gray-700 rounded-lg p-2" name="desc">${member.desc}</textarea></div><div class="md:col-span-2"><label class="font-semibold text-sm">Image URL</label><input type="text" class="admin-input mt-1 w-full bg-gray-800 border border-gray-700 rounded-lg p-2" name="img" value="${member.img}"></div><div class="flex gap-4"><button type="submit" class="w-full btn-primary font-bold py-2 px-4 rounded-full text-sm">Save</button><button type="button" class="w-full btn-secondary !border-red-500 !text-red-500 hover:!bg-red-500 hover:!text-white font-bold py-2 px-4 rounded-full text-sm remove-team-member-btn" data-id="${member.id}">Remove</button></div></form>`).join('');
+        };
+
+        const pageLinks = document.querySelectorAll('.page-link');
+        const pages = document.querySelectorAll('.page');
+        const mainNavLinks = document.querySelectorAll('#main-nav .nav-link');
+        function showPage(pageId) {
+            pages.forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId)?.classList.add('active');
+            mainNavLinks.forEach(nl => nl.classList.toggle('active-link', nl.dataset.page === pageId));
+            document.getElementById('mobile-menu').classList.add('hidden');
+            window.scrollTo(0, 0);
+        }
+        pageLinks.forEach(link => link.addEventListener('click', (e) => { e.preventDefault(); showPage(link.dataset.page); }));
+        document.getElementById('menu-toggle').addEventListener('click', () => document.getElementById('mobile-menu').classList.toggle('hidden'));
+        
+        const currencyConverter = document.getElementById('currency-converter');
+        function updatePrices() {
+            const targetCurrency = currencyConverter.value;
+            const rate = exchangeRates[targetCurrency];
+            const symbol = currencySymbols[targetCurrency];
+            document.querySelectorAll('#currency-symbol').forEach(el => el.textContent = targetCurrency);
+            document.querySelectorAll('.service-price, .plan-price').forEach(el => {
+                const basePrice = parseFloat(el.dataset.priceUsd);
+                if (basePrice === 0 && el.closest('.service-card')) return;
+                const newPrice = (basePrice * rate).toFixed(2);
+                const perMonthText = el.closest('.plan-price') ? '<span class="text-xl text-gray-400">/mo</span>' : '';
+                el.innerHTML = `${symbol}${newPrice}${perMonthText}`;
+            });
+        }
+        currencyConverter.addEventListener('change', updatePrices);
+
+        const cartModal = document.getElementById('cart-modal');
+        function findServiceById(id) { return Object.values(siteData.services).flat().find(s => s.id === id); }
+        function updateCart() {
+            const cartBadge = document.getElementById('cart-badge');
+            if (cart.length > 0) {
+                cartBadge.style.display = 'block';
+                cartBadge.textContent = cart.length;
+            } else {
+                cartBadge.style.display = 'none';
+            }
+            const cartItemsContainer = document.getElementById('cart-items-container');
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = '<p class="text-gray-400 text-center">Your cart is empty.</p>';
+                document.getElementById('cart-total').textContent = '';
+                return;
+            }
+            cartItemsContainer.innerHTML = cart.map((item, index) => `
+                <div class="flex justify-between items-center mb-4 p-2 rounded-lg bg-primary">
+                    <div><h4 class="font-bold">${item.name}</h4><p class="text-sm text-gray-400 service-price" data-price-usd="${item.price}"></p></div>
+                    <button class="text-red-500 hover:text-red-400 remove-from-cart-btn" data-index="${index}"><i class="fas fa-trash-alt"></i></button>
+                </div>`).join('');
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            document.getElementById('cart-total').innerHTML = `<span class="service-price" data-price-usd="${total}"></span>`;
+            updatePrices();
+        }
+
+        const authModal = document.getElementById('auth-modal');
+        function updateAuthUI() {
+            const loggedIn = isAdmin;
+            document.querySelectorAll('#login-btn, #login-btn-mobile').forEach(el => el.classList.toggle('hidden', loggedIn));
+            document.querySelectorAll('#logout-btn, #logout-btn-mobile').forEach(el => el.classList.toggle('hidden', !loggedIn));
+            document.querySelectorAll('#admin-nav-link, #admin-nav-link-mobile').forEach(el => el.classList.toggle('hidden', !loggedIn));
+        }
+        function login(user, pass) {
+            if (user === 'FuzzUwU' && pass === 'UwU') {
+                isAdmin = true;
+                updateAuthUI();
+                authModal.style.display = 'none';
+                showPage('admin');
+                document.getElementById('login-error').classList.add('hidden');
+                document.getElementById('login-form').reset();
+            } else {
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        }
+        function logout() { isAdmin = false; updateAuthUI(); showPage('home'); }
+        document.getElementById('login-form').addEventListener('submit', (e) => { e.preventDefault(); login(document.getElementById('login-user').value, document.getElementById('login-password').value); });
+        document.querySelectorAll('#login-btn, #login-btn-mobile').forEach(btn => btn.addEventListener('click', () => { authModal.style.display = 'block'; document.getElementById('login-error').classList.add('hidden'); }));
+        document.querySelectorAll('#logout-btn, #logout-btn-mobile').forEach(btn => btn.addEventListener('click', logout));
+        document.getElementById('close-modal-btn').addEventListener('click', () => authModal.style.display = 'none');
+        
+        const adminTabs = document.querySelectorAll('.admin-tab');
+        const adminTabContents = document.querySelectorAll('.admin-tab-content');
+        adminTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                adminTabs.forEach(t => t.classList.remove('active-tab'));
+                adminTabContents.forEach(c => c.classList.remove('active'));
+                tab.classList.add('active-tab');
+                document.getElementById(`admin-${tab.dataset.tab}`).classList.add('active');
+            });
+        });
+
+        document.getElementById('add-team-member-btn').addEventListener('click', () => {
+            const newId = siteData.team.length > 0 ? Math.max(...siteData.team.map(m => m.id)) + 1 : 1;
+            siteData.team.push({id: newId, name: "New Member", role: "New Role", desc: "A short description.", img: `https://placehold.co/150x150/0a0a0a/ffffff?text=N`});
+            renderAll();
+        });
+
+        document.body.addEventListener('click', e => {
+            const target = e.target;
+            if (target.closest('.add-to-cart-btn')) {
+                const id = parseInt(target.closest('.add-to-cart-btn').dataset.id);
+                cart.push(findServiceById(id));
+                updateCart();
+            } else if (target.closest('.remove-from-cart-btn')) {
+                cart.splice(parseInt(target.closest('.remove-from-cart-btn').dataset.index), 1);
+                updateCart();
+            } else if (target.closest('.remove-team-member-btn')) {
+                const id = parseInt(target.closest('.remove-team-member-btn').dataset.id);
+                siteData.team = siteData.team.filter(m => m.id !== id);
+                renderAll();
+                alert('Team member removed.');
+            } else if (target == authModal || target == cartModal || target == compareModal) {
+                 authModal.style.display = 'none';
+                 cartModal.style.display = 'none';
+                 compareModal.style.display = 'none';
+            }
+        });
+
+        const compareModal = document.getElementById('compare-modal');
+        document.getElementById('compare-plans-btn').addEventListener('click', () => compareModal.style.display = 'block');
+        document.getElementById('close-compare-btn').addEventListener('click', () => compareModal.style.display = 'none');
+        document.getElementById('close-cart-btn').addEventListener('click', () => cartModal.style.display = 'none');
+        document.getElementById('cart-btn').addEventListener('click', () => cartModal.style.display = 'block');
+        
+        document.getElementById('admin').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const form = e.target;
+            if (!form.closest('.admin-card')) return;
+
+            const id = form.dataset.id.includes('starter') || form.dataset.id.includes('pro') || form.dataset.id.includes('enterprise') ? form.dataset.id : parseInt(form.dataset.id);
+            const type = form.dataset.type;
+            const formData = new FormData(form);
+
+            if (type === 'plan') {
+                const plan = siteData.plans.find(p => p.id === id);
+                plan.name = formData.get('name');
+                plan.price = parseFloat(formData.get('price'));
+                plan.features = formData.get('features').split('\n').filter(f => f.trim() !== '');
+            } else if (type === 'service') {
+                const service = findServiceById(id);
+                service.name = formData.get('name');
+                service.desc = formData.get('desc');
+                service.price = parseFloat(formData.get('price'));
+            } else if (type === 'team') {
+                const member = siteData.team.find(m => m.id === id);
+                member.name = formData.get('name');
+                member.role = formData.get('role');
+                member.desc = formData.get('desc');
+                member.img = formData.get('img');
+            }
+            renderAll();
+            alert('Content updated successfully!');
+        });
+        
+        renderAll();
+    });
+    </script>
+
+<!-- Minecraft Floating Pixel Effects -->
+<div id="floating-particles"></div>
+<script>
+  const particleImages = [
+    "https://static.wikia.nocookie.net/minecraft_gamepedia/images/3/3a/Grass_Block.png",
+    "https://static.wikia.nocookie.net/minecraft_gamepedia/images/7/71/Stone_Block.png",
+    "https://static.wikia.nocookie.net/minecraft_gamepedia/images/f/f0/Diamond_Block.png",
+    "https://static.wikia.nocookie.net/minecraft_gamepedia/images/5/57/Redstone_Block.png"
+  ];
+
+  for (let i = 0; i < 20; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'floating-pixel';
+    particle.style.left = Math.random() * 100 + 'vw';
+    particle.style.animationDuration = (6 + Math.random() * 6) + 's';
+    const img = document.createElement('img');
+    img.src = particleImages[Math.floor(Math.random() * particleImages.length)];
+    particle.appendChild(img);
+    document.getElementById('floating-particles').appendChild(particle);
+  }
+</script>
+
+</body>
+</html>
