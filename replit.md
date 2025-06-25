@@ -142,8 +142,11 @@ Fuzz Labs is a full-stack web application designed as a comprehensive platform f
 
 ## Changelog
 
-Changelog:
-- June 25, 2025. Initial setup
+- June 25, 2025: Initial setup with full e-commerce platform
+- June 25, 2025: Added authentic content from HTML file (team, pricing, services)
+- June 25, 2025: Implemented UPI payment system with arhaanjain@fam
+- June 25, 2025: Fixed color theme (#0a0a0a background, #00ff88 accent)
+- June 25, 2025: Added Netlify deployment configuration
 
 ## User Preferences
 
