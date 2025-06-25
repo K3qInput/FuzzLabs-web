@@ -25,27 +25,18 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
   // Redirect to the backend route to initiate Google OAuth
   const handleGoogleAuth = () => {
     setIsLoading(true);
-    // This route should trigger passport.authenticate('google') on your backend
     window.location.href = "/api/auth/google";
   };
 
-  // Corrected Discord OAuth URL for user authentication
+  // Redirect to the backend route to initiate Discord OAuth
   const handleDiscordAuth = () => {
     setIsLoading(true);
-    // Replace '1387286733686571039' with your actual Discord Client ID if different
-    // The redirect_uri MUST match what you registered in Discord Developer Portal
-    // and your backend's Discord callback route.
-    // The scopes 'identify' and 'email' are for user authentication, NOT 'bot'.
-    const discordClientId = "1387286733686571039"; // Make sure this is YOUR Discord Client ID
-    const discordRedirectUri = "https://discord.com/oauth2/authorize?client_id=1387286733686571039&response_type=code&redirect_uri=https%3A%2F%2Ffuzzlabs.netlify.app%2Fapi%2Fcallback&scope=email+identify";
-
-    window.location.href = `https://discord.com/oauth2/authorize?client_id=1387286733686571039&response_type=code&redirect_uri=https%3A%2F%2Ffuzzlabs.netlify.app%2Fapi%2Fcallback&scope=email+identify`;
+    window.location.href = "/api/auth/discord";
   };
 
   // Redirect to the backend route to initiate Replit OAuth
   const handleReplitAuth = () => {
     setIsLoading(true);
-    // This route should trigger passport.authenticate('replitauth:hostname') on your backend
     window.location.href = "/api/login";
   };
 
