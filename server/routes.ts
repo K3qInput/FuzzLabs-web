@@ -1,276 +1,324 @@
-import * as client from "openid-client";
-import { Strategy, type VerifyFunction } from "openid-client/passport";
-
-import passport from "passport";
-import session from "express-session";
-import type { Express, RequestHandler } from "express";
-import memoize from "memoizee";
-import connectPg from "connect-pg-simple";
+import type { Express } from "express";
+import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { setupAuth, isAuthenticated } from "./replitAuth";
+import { insertOrderSchema, insertOrderItemSchema } from "@shared/schema";
+import { z } from "zod";
 
-import { Strategy as DiscordStrategy } from 'passport-discord';
-import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-
-
-if (!process.env.REPLIT_DOMAINS) {
-  throw new Error("Environment variable REPLIT_DOMAINS not provided");
-}
-
-if (!process.env.DISCORD_CLIENT_ID || !process.env.DISCORD_CLIENT_SECRET) {
-  console.warn("Discord environment variables (DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET) are not fully provided. Discord authentication may not work.");
-}
-
-if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-    console.warn("Google environment variables (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET) are not fully provided. Google authentication may not work.");
-}
+// UPI Payment Configuration
+const UPI_ID = "arhaanjain@fam";
 
 
-const getOidcConfig = memoize(
-  async () => {
-    return await client.discovery(
-      new URL(process.env.ISSUER_URL ?? "https://replit.com/oidc"),
-      process.env.REPL_ID!
-    );
-  },
-  { maxAge: 3600 * 1000 }
-);
 
-export function getSession() {
-  const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
-  const pgStore = connectPg(session);
-  const sessionStore = new pgStore({
-    conString: process.env.DATABASE_URL,
-    createTableIfMissing: false,
-    ttl: sessionTtl,
-    tableName: "sessions",
-  });
-  return session({
-    secret: process.env.SESSION_SECRET!,
-    store: sessionStore,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: sessionTtl,
-      sameSite: 'lax',
-    },
-  });
-}
+const checkoutSchema = z.object({
+  items: z.array(z.object({
+    serviceId: z.number(),
+    quantity: z.number().min(1),
+  })),
+  billingInfo: z.object({
+    firstName: z.string(),
+    lastName: z.string(),
+    email: z.string().email(),
+    discordUsername: z.string().optional(),
+  }),
+  paymentMethod: z.enum(['upi']),
+});
 
-function updateUserSession(
-  user: any,
-  tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers
-) {
-  user.claims = tokens.claims();
-  user.access_token = tokens.access_token;
-  user.refresh_token = tokens.refresh_token;
-  user.expires_at = user.claims?.exp;
-}
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup auth middleware
+  await setupAuth(app);
 
-// Separate function for updating user based on Discord profile
-function updateUserSessionFromDiscord(user: any, profile: any, accessToken: string, refreshToken: string) {
-    user.id = profile.id;
-    user.email = profile.email;
-    user.username = profile.username;
-    user.discriminator = profile.discriminator;
-    user.profileImageUrl = profile.avatar ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png` : null;
-    user.access_token = accessToken;
-    user.refresh_token = refreshToken;
-    user.expires_at = Math.floor(Date.now() / 1000) + 3600; // Discord tokens typically last 1 hour
-}
-
-// Separate function for updating user based on Google profile (if needed, otherwise adapt generic)
-function updateUserSessionFromGoogle(user: any, profile: any, accessToken: string, refreshToken: string) {
-    user.id = profile.id;
-    user.email = profile.emails && profile.emails.length > 0 ? profile.emails[0].value : null;
-    user.firstName = profile.name?.givenName;
-    user.lastName = profile.name?.familyName;
-    user.profileImageUrl = profile.photos && profile.photos.length > 0 ? profile.photos[0].value : null;
-    user.access_token = accessToken;
-    user.refresh_token = refreshToken;
-    user.expires_at = Math.floor(Date.now() / 1000) + 3600; // Google tokens typically last 1 hour
-}
-
-
-async function upsertUser(
-  claims: any,
-) {
-  await storage.upsertUser({
-    id: claims["sub"],
-    email: claims["email"],
-    firstName: claims["first_name"],
-    lastName: claims["last_name"],
-    profileImageUrl: claims["profile_image_url"],
-  });
-}
-
-export async function setupAuth(app: Express) {
-  app.set("trust proxy", 1);
-  app.use(getSession());
-  app.use(passport.initialize());
-  app.use(passport.session());
-
-  // --- REPLIT AUTHENTICATION SETUP ---
-  const config = await getOidcConfig();
-
-  const verifyReplit: VerifyFunction = async (
-    tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers,
-    verified: passport.AuthenticateCallback
-  ) => {
-    const user = {};
-    updateUserSession(user, tokens);
-    await upsertUser(tokens.claims());
-    verified(null, user);
-  };
-
-  for (const domain of process.env.REPLIT_DOMAINS!.split(",")) {
-    const strategy = new Strategy(
-      {
-        name: `replitauth:${domain}`,
-        config,
-        scope: "openid email profile offline_access",
-        callbackURL: `https://${domain}/api/callback`,
-      },
-      verifyReplit,
-    );
-    passport.use(strategy);
-  }
-
-  // --- DISCORD AUTHENTICATION SETUP ---
-  passport.use('discord', new DiscordStrategy({
-      clientID: process.env.DISCORD_CLIENT_ID!,
-      clientSecret: process.env.DISCORD_CLIENT_SECRET!,
-      callbackURL: 'https://fuzzlabs.netlify.app/api/auth/discord/callback', // Correct Discord Callback URL
-      scope: ['identify', 'email']
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      const userClaims = {
-          sub: profile.id,
-          email: profile.email,
-          first_name: profile.username,
-          last_name: profile.discriminator,
-          profile_image_url: profile.avatar ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png` : null,
-      };
-      const user = {};
-      updateUserSessionFromDiscord(user, profile, accessToken, refreshToken); // Using Discord-specific update
-
-      await upsertUser(userClaims);
-      return done(null, user);
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
     }
-  ));
+  });
 
-  // --- GOOGLE AUTHENTICATION SETUP ---
-  passport.use('google', new GoogleStrategy({ // Added strategy name 'google' explicitly
-      clientID: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      callbackURL: 'https://fuzzlabs.netlify.app/api/auth/google/callback', // Correct Google Callback URL
-      scope: ['profile', 'email']
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      const userClaims = {
-        sub: profile.id,
-        email: profile.emails && profile.emails.length > 0 ? profile.emails[0].value : null,
-        first_name: profile.name?.givenName, // Renamed to match upsertUser claims
-        last_name: profile.name?.familyName, // Renamed to match upsertUser claims
-        profile_image_url: profile.photos && profile.photos.length > 0 ? profile.photos[0].value : null,
-      };
-      const user = {};
-      updateUserSessionFromGoogle(user, profile, accessToken, refreshToken); // Using Google-specific update
-
-      await upsertUser(userClaims);
-      return done(null, user);
+  // Service routes
+  app.get('/api/services', async (req, res) => {
+    try {
+      const services = await storage.getServices();
+      res.json(services);
+    } catch (error) {
+      console.error("Error fetching services:", error);
+      res.status(500).json({ message: "Failed to fetch services" });
     }
-  ));
-
-
-  // --- PASSPORT SERIALIZATION/DESERIALIZATION ---
-  passport.serializeUser((user: Express.User, cb) => {
-      cb(null, user);
-  });
-  passport.deserializeUser((user: Express.User, cb) => {
-      cb(null, user as Express.User);
   });
 
-  // --- REPLIT AUTH ROUTES ---
-  app.get("/api/login", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
-      prompt: "login consent",
-      scope: ["openid", "email", "profile", "offline_access"],
-    })(req, res, next);
+  app.get('/api/service-categories', async (req, res) => {
+    try {
+      const categories = await storage.getServiceCategories();
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching service categories:", error);
+      res.status(500).json({ message: "Failed to fetch service categories" });
+    }
   });
 
-  app.get("/api/callback", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
-      successReturnToOrRedirect: "/",
-      failureRedirect: "/api/login",
-    })(req, res, next);
+  // Order routes
+  app.get('/api/orders', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const orders = await storage.getUserOrders(userId);
+      res.json(orders);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      res.status(500).json({ message: "Failed to fetch orders" });
+    }
   });
 
-  // --- DISCORD AUTH ROUTES ---
-  app.get('/api/auth/discord', passport.authenticate('discord'));
-
-  app.get('/api/auth/discord/callback',
-      passport.authenticate('discord', { failureRedirect: '/api/login' }),
-      function(req, res) {
-          res.redirect('/dashboard');
+  app.get('/api/orders/:orderNumber', isAuthenticated, async (req: any, res) => {
+    try {
+      const { orderNumber } = req.params;
+      const order = await storage.getOrderByNumber(orderNumber);
+      
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
       }
-  );
 
-  // --- GOOGLE AUTH ROUTES ---
-  app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-
-  app.get('/api/auth/google/callback',
-      passport.authenticate('google', { failureRedirect: '/api/login' }),
-      function(req, res) {
-          res.redirect('/dashboard');
+      // Check if user owns this order or is admin
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      if (order.userId !== userId && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Access denied" });
       }
-  );
 
-
-  // --- LOGOUT ROUTE ---
-  app.get("/api/logout", (req, res) => {
-    req.logout((err) => {
-      if (err) {
-        console.error("Logout error:", err);
-        return res.status(500).send("Logout failed");
-      }
-      res.redirect(
-        client.buildEndSessionUrl(config, {
-          client_id: process.env.REPL_ID!,
-          post_logout_redirect_uri: `${req.protocol}://${req.hostname}`,
-        }).href
-      );
-    });
+      res.json(order);
+    } catch (error) {
+      console.error("Error fetching order:", error);
+      res.status(500).json({ message: "Failed to fetch order" });
+    }
   });
+
+  // Checkout routes
+  app.post('/api/checkout', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { items, billingInfo, paymentMethod } = checkoutSchema.parse(req.body);
+
+      // Generate order number
+      const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
+
+      // Calculate total
+      let totalAmount = 0;
+      const orderItems = [];
+
+      for (const item of items) {
+        const service = await storage.getServiceById(item.serviceId);
+        if (!service) {
+          return res.status(400).json({ message: `Service ${item.serviceId} not found` });
+        }
+
+        const itemTotal = parseFloat(service.price) * item.quantity;
+        totalAmount += itemTotal;
+
+        orderItems.push({
+          serviceId: service.id,
+          quantity: item.quantity,
+          unitPrice: service.price,
+          totalPrice: itemTotal.toString(),
+        });
+      }
+
+      // Create order
+      const order = await storage.createOrder({
+        userId,
+        orderNumber,
+        totalAmount: totalAmount.toString(),
+        currency: 'INR',
+        paymentMethod: 'upi',
+        billingInfo: billingInfo as any,
+        status: 'pending',
+        paymentStatus: 'pending',
+      });
+
+      // Add order items
+      for (const item of orderItems) {
+        await storage.addOrderItem({
+          ...item,
+          orderId: order.id,
+        });
+      }
+
+      res.json({ 
+        orderId: order.id, 
+        orderNumber: order.orderNumber,
+        totalAmount: order.totalAmount,
+        upiId: UPI_ID
+      });
+    } catch (error) {
+      console.error("Error creating order:", error);
+      res.status(500).json({ message: "Failed to create order" });
+    }
+  });
+
+  // UPI payment routes
+  app.post("/api/upi-payment-info", isAuthenticated, async (req: any, res) => {
+    try {
+      const { orderId } = req.body;
+      const order = await storage.getOrderById(orderId);
+      
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      const userId = req.user.claims.sub;
+      if (order.userId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Generate UPI payment URL
+      const amount = parseFloat(order.totalAmount);
+      const upiUrl = `upi://pay?pa=${UPI_ID}&pn=Fuzz%20Labs&am=${amount}&cu=INR&tn=Payment%20for%20Order%20${order.orderNumber}`;
+
+      res.json({ 
+        upiId: UPI_ID,
+        upiUrl: upiUrl,
+        amount: amount,
+        orderNumber: order.orderNumber,
+        qrCodeData: upiUrl
+      });
+    } catch (error: any) {
+      console.error("Error getting UPI payment info:", error);
+      res.status(500).json({ message: "Error getting payment info: " + error.message });
+    }
+  });
+
+  app.post("/api/confirm-upi-payment", isAuthenticated, async (req: any, res) => {
+    try {
+      const { orderId, transactionId } = req.body;
+      const order = await storage.getOrderById(orderId);
+      
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      const userId = req.user.claims.sub;
+      if (order.userId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Update order with transaction ID and mark as processing
+      await storage.updateOrderPaymentIntent(order.id, transactionId);
+      await storage.updateOrderStatus(order.id, 'processing', 'pending_verification');
+      
+      res.json({ 
+        success: true, 
+        message: "Payment submitted for verification. We'll update your order status once confirmed." 
+      });
+    } catch (error: any) {
+      console.error("Error confirming UPI payment:", error);
+      res.status(500).json({ message: "Error confirming payment: " + error.message });
+    }
+  });
+
+  // Support ticket routes
+  app.get('/api/support-tickets', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const tickets = await storage.getUserSupportTickets(userId);
+      res.json(tickets);
+    } catch (error) {
+      console.error("Error fetching support tickets:", error);
+      res.status(500).json({ message: "Failed to fetch support tickets" });
+    }
+  });
+
+  app.post('/api/support-tickets', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { subject, description, priority = 'medium' } = req.body;
+      
+      const ticketNumber = `TKT-${Date.now()}-${Math.random().toString(36).substr(2, 3).toUpperCase()}`;
+      
+      const ticket = await storage.createSupportTicket({
+        userId,
+        ticketNumber,
+        subject,
+        description,
+        priority,
+        status: 'open',
+      });
+
+      res.json(ticket);
+    } catch (error) {
+      console.error("Error creating support ticket:", error);
+      res.status(500).json({ message: "Failed to create support ticket" });
+    }
+  });
+
+  // Dashboard stats
+  app.get('/api/dashboard-stats', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const stats = await storage.getDashboardStats(userId);
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching dashboard stats:", error);
+      res.status(500).json({ message: "Failed to fetch dashboard stats" });
+    }
+  });
+
+  // Admin routes
+  app.get('/api/admin/orders', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { limit = 50, offset = 0 } = req.query;
+      const orders = await storage.getAllOrders(Number(limit), Number(offset));
+      res.json(orders);
+    } catch (error) {
+      console.error("Error fetching admin orders:", error);
+      res.status(500).json({ message: "Failed to fetch orders" });
+    }
+  });
+
+  app.get('/api/admin/support-tickets', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { limit = 50, offset = 0 } = req.query;
+      const tickets = await storage.getAllSupportTickets(Number(limit), Number(offset));
+      res.json(tickets);
+    } catch (error) {
+      console.error("Error fetching admin support tickets:", error);
+      res.status(500).json({ message: "Failed to fetch support tickets" });
+    }
+  });
+
+  app.get('/api/admin/stats', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const stats = await storage.getDashboardStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({ message: "Failed to fetch admin stats" });
+    }
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
 }
-
-export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  const user = req.user as any;
-
-  if (!req.isAuthenticated() || !user?.expires_at) {
-    return res.status(401).json({ message: "Unauthorized: Not authenticated or missing expiration" });
-  }
-
-  const now = Math.floor(Date.now() / 1000);
-  if (now <= user.expires_at) {
-    return next();
-  }
-
-  const refreshToken = user.refresh_token;
-  if (!refreshToken) {
-    res.status(401).json({ message: "Unauthorized: No refresh token" });
-    return;
-  }
-
-  try {
-    const config = await getOidcConfig();
-    const tokenResponse = await client.refreshTokenGrant(config, refreshToken);
-    updateUserSession(user, tokenResponse);
-    return next();
-  } catch (error) {
-    console.error("Token refresh failed:", error);
-    res.status(401).json({ message: "Unauthorized: Token refresh failed" });
-    return;
-  }
-};
