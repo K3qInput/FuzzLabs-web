@@ -29,7 +29,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
   const handleDiscordAuth = () => {
     setIsLoading(true);
-    window.location.href = "/api/auth/discord";
+    window.location.href = "https://discord.com/oauth2/authorize?client_id=1387286733686571039&permissions=0&integration_type=0&scope=bot";
   };
 
   const handleReplitAuth = () => {
