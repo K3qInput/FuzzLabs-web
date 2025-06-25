@@ -8,8 +8,6 @@ import { z } from "zod";
 // UPI Payment Configuration
 const UPI_ID = "arhaanjain@fam";
 
-
-
 const checkoutSchema = z.object({
   items: z.array(z.object({
     serviceId: z.number(),
@@ -77,7 +75,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { orderNumber } = req.params;
       const order = await storage.getOrderByNumber(orderNumber);
-      
+
       if (!order) {
         return res.status(404).json({ message: "Order not found" });
       }
@@ -146,8 +144,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      res.json({ 
-        orderId: order.id, 
+      res.json({
+        orderId: order.id,
         orderNumber: order.orderNumber,
         totalAmount: order.totalAmount,
         upiId: UPI_ID
@@ -163,7 +161,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { orderId } = req.body;
       const order = await storage.getOrderById(orderId);
-      
+
       if (!order) {
         return res.status(404).json({ message: "Order not found" });
       }
@@ -177,7 +175,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const amount = parseFloat(order.totalAmount);
       const upiUrl = `upi://pay?pa=${UPI_ID}&pn=Fuzz%20Labs&am=${amount}&cu=INR&tn=Payment%20for%20Order%20${order.orderNumber}`;
 
-      res.json({ 
+      res.json({
         upiId: UPI_ID,
         upiUrl: upiUrl,
         amount: amount,
@@ -194,7 +192,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { orderId, transactionId } = req.body;
       const order = await storage.getOrderById(orderId);
-      
+
       if (!order) {
         return res.status(404).json({ message: "Order not found" });
       }
@@ -207,10 +205,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update order with transaction ID and mark as processing
       await storage.updateOrderPaymentIntent(order.id, transactionId);
       await storage.updateOrderStatus(order.id, 'processing', 'pending_verification');
-      
-      res.json({ 
-        success: true, 
-        message: "Payment submitted for verification. We'll update your order status once confirmed." 
+
+      res.json({
+        success: true,
+        message: "Payment submitted for verification. We'll update your order status once confirmed."
       });
     } catch (error: any) {
       console.error("Error confirming UPI payment:", error);
@@ -234,9 +232,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const { subject, description, priority = 'medium' } = req.body;
-      
+
       const ticketNumber = `TKT-${Date.now()}-${Math.random().toString(36).substr(2, 3).toUpperCase()}`;
-      
+
       const ticket = await storage.createSupportTicket({
         userId,
         ticketNumber,
@@ -270,7 +268,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
-      
+
       if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -288,7 +286,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
-      
+
       if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -306,7 +304,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
-      
+
       if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
