@@ -29,16 +29,11 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
     window.location.href = "/api/auth/google";
   };
 
-  // Corrected Discord OAuth URL for user authentication
+  // Discord OAuth through backend route
   const handleDiscordAuth = () => {
     setIsLoading(true);
-    // Replace '1387286733686571039' with your actual Discord Client ID if different
-    const discordClientId = "1387286733686571039"; // Make sure this is YOUR Discord Client ID
-    // THE FIX: This redirect_uri MUST match what you registered in Discord Developer Portal
-    // and your backend's Discord callback route: /api/auth/discord/callback
-    const discordRedirectUri = "https://discord.com/oauth2/authorize?client_id=1387286733686571039&response_type=code&redirect_uri=https%3A%2F%2Ffuzzlabs.netlify.app%2Fapi%2Fcallback&scope=email+identify";
-
-    window.location.href = `https://discord.com/oauth2/authorize?client_id=1387286733686571039&response_type=code&redirect_uri=https%3A%2F%2Ffuzzlabs.netlify.app%2Fapi%2Fcallback&scope=email+identify`;
+    // Use the backend route to initiate Discord OAuth
+    window.location.href = "/api/auth/discord";
   };
 
   // Redirect to the backend route to initiate Replit OAuth
