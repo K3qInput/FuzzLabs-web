@@ -1,8 +1,6 @@
-import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const openai = new OpenAI({ 
-  apiKey: process.env.OPENAI_API_KEY 
-});
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export interface PriceComparison {
   service: string;
@@ -19,6 +17,8 @@ export interface PriceComparison {
 
 export async function comparePricing(serviceName: string, servicePrice: number, serviceDescription: string): Promise<PriceComparison> {
   try {
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+    
     const prompt = `
 You are a pricing analysis expert for Minecraft server services. Analyze the following service and compare it with competitors on platforms like BuiltByBit, Polymart, MC-Market, and Spigot.
 
@@ -51,25 +51,15 @@ Respond in JSON format with the following structure:
 Focus on accuracy and provide realistic market data based on current Minecraft service pricing trends.
 `;
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert pricing analyst for Minecraft server services with deep knowledge of platforms like BuiltByBit, Polymart, MC-Market, and Spigot. Provide accurate, data-driven pricing comparisons."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      response_format: { type: "json_object" },
-      max_tokens: 1000,
-      temperature: 0.7
-    });
-
-    const result = JSON.parse(response.choices[0].message.content || '{}');
-    return result as PriceComparison;
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    // Clean up the response to ensure it's valid JSON
+    const cleanedText = text.replace(/```json\n?/, '').replace(/```\n?$/, '').trim();
+    const parsedResult = JSON.parse(cleanedText);
+    
+    return parsedResult as PriceComparison;
 
   } catch (error) {
     console.error('AI pricing analysis error:', error);
@@ -94,6 +84,8 @@ Focus on accuracy and provide realistic market data based on current Minecraft s
 
 export async function getChatResponse(userMessage: string, context?: string): Promise<string> {
   try {
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+    
     const systemPrompt = `
 You are Seragon's AI assistant, specializing in Minecraft server services and pricing. You help users understand our services and compare them with competitors.
 
@@ -105,25 +97,15 @@ Key information about Seragon:
 - Contact is through Discord for purchases
 
 Be helpful, knowledgeable, and professional. If users ask about pricing comparisons, provide detailed analysis.
+
+${context ? `Context: ${context}` : ''}
+
+User message: ${userMessage}
 `;
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-      messages: [
-        {
-          role: "system",
-          content: systemPrompt
-        },
-        {
-          role: "user",
-          content: `${context ? `Context: ${context}\n\n` : ''}${userMessage}`
-        }
-      ],
-      max_tokens: 500,
-      temperature: 0.8
-    });
-
-    return response.choices[0].message.content || "I apologize, but I'm having trouble responding right now. Please try again later.";
+    const result = await model.generateContent(systemPrompt);
+    const response = await result.response;
+    return response.text() || "I apologize, but I'm having trouble responding right now. Please try again later.";
 
   } catch (error) {
     console.error('AI chat error:', error);
