@@ -10,10 +10,10 @@ export default function Team() {
       <div className="container mx-auto px-4 py-20">
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Meet the <span className="gradient-text">Fuzz Labs Team</span>
+            Meet the <span className="gradient-text">Seragon Team</span>
           </h1>
           <p className="text-lg text-gray-400 max-w-3xl mx-auto">
-            The passionate experts dedicated to bringing your Minecraft vision to life.
+            The passionate experts at Seragon by Sterix, dedicated to bringing your Minecraft vision to life.
           </p>
         </div>
 
@@ -39,7 +39,14 @@ export default function Team() {
                   </AvatarFallback>
                 </Avatar>
                 <h3 className="text-2xl font-bold text-white mb-2">{member.name}</h3>
-                <p className="text-[#00ff88] font-semibold mb-4">{member.role}</p>
+                <p className="text-[#00ff88] font-semibold mb-2">{member.role}</p>
+                {member.email && (
+                  <p className="text-blue-400 text-sm mb-4">
+                    <a href={`mailto:${member.email}`} className="hover:underline">
+                      {member.email}
+                    </a>
+                  </p>
+                )}
                 <p className="text-gray-400">{member.description}</p>
               </CardContent>
             </Card>

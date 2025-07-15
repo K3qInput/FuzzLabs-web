@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getExchangeRate, formatCurrency, detectUserCurrency, supportedCurrencies } from "@/lib/currency";
 import {
   Smartphone,
   Shield,
@@ -19,7 +21,8 @@ import {
   CheckCircle,
   Lock,
   Copy,
-  QrCode
+  QrCode,
+  DollarSign
 } from "lucide-react";
 
 type CheckoutStep = "details" | "payment" | "confirmation";
@@ -48,6 +51,10 @@ export default function Checkout() {
   const [upiPaymentInfo, setUpiPaymentInfo] = useState<any>(null);
   const [transactionId, setTransactionId] = useState("");
   const [orderId, setOrderId] = useState<number | null>(null);
+  const [selectedCurrency, setSelectedCurrency] = useState<string>(() => detectUserCurrency());
+  const [exchangeRate, setExchangeRate] = useState<number>(1);
+  const [convertedTotal, setConvertedTotal] = useState<number>(0);
+  const [isLoadingRate, setIsLoadingRate] = useState(false);
 
   // Redirect if not authenticated or no items
   useEffect(() => {

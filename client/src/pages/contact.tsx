@@ -22,45 +22,19 @@ const contactMethods = [
     icon: Mail,
     title: "Email Support",
     description: "Get help via email within 2 hours",
-    contact: "support@fuzzlabs.com",
-    action: "mailto:support@fuzzlabs.com"
+    contact: "support@seragon.com",
+    action: "mailto:support@seragon.com"
   },
   {
     icon: MessageCircle,
     title: "Discord Community",
     description: "Join our Discord for instant support",
-    contact: "discord.gg/fuzzlabs",
-    action: "https://discord.gg/fuzzlabs"
-  },
-  {
-    icon: Phone,
-    title: "Phone Support",
-    description: "Emergency support for critical issues",
-    contact: "+1 (555) 123-4567",
-    action: "tel:+15551234567"
+    contact: "discord.gg/b4f8WZy4R8",
+    action: "https://discord.gg/b4f8WZy4R8"
   }
 ];
 
-const officeLocations = [
-  {
-    city: "San Francisco",
-    address: "123 Tech Street, San Francisco, CA 94105",
-    timezone: "PST (UTC-8)",
-    hours: "9:00 AM - 6:00 PM"
-  },
-  {
-    city: "New York",
-    address: "456 Business Ave, New York, NY 10001",
-    timezone: "EST (UTC-5)",
-    hours: "9:00 AM - 6:00 PM"
-  },
-  {
-    city: "London",
-    address: "789 Innovation Lane, London, UK EC1A 1BB",
-    timezone: "GMT (UTC+0)",
-    hours: "9:00 AM - 5:00 PM"
-  }
-];
+// Removed office locations as requested
 
 const supportFeatures = [
   {
@@ -273,27 +247,29 @@ export default function Contact() {
               </div>
             </div>
 
-            {/* Office Locations */}
+            {/* Support Features */}
             <div>
-              <h2 className="text-2xl font-bold mb-6">Office Locations</h2>
+              <h2 className="text-2xl font-bold mb-6">Support Features</h2>
               <div className="space-y-4">
-                {officeLocations.map((office) => (
-                  <Card key={office.city} className="order-card">
-                    <CardContent className="p-6">
-                      <div className="flex items-start space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-green-400 to-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <MapPin className="h-6 w-6 text-black" />
+                {supportFeatures.map((feature) => {
+                  const IconComponent = feature.icon;
+                  
+                  return (
+                    <Card key={feature.title} className="order-card">
+                      <CardContent className="p-6">
+                        <div className="flex items-start space-x-4">
+                          <div className="w-12 h-12 bg-gradient-to-r from-green-400 to-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <IconComponent className="h-6 w-6 text-black" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold mb-1">{feature.title}</h3>
+                            <p className="text-gray-400 text-sm">{feature.description}</p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="font-semibold mb-1">{office.city}</h3>
-                          <p className="text-gray-400 text-sm mb-1">{office.address}</p>
-                          <p className="text-gray-400 text-sm mb-1">{office.timezone}</p>
-                          <p className="text-green-400 text-sm">{office.hours}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             </div>
           </div>

@@ -1,8 +1,8 @@
-# Fuzz Labs - Minecraft Service Platform
+# Seragon - Minecraft Service Platform
 
 ## Overview
 
-Fuzz Labs is a full-stack web application designed as a comprehensive platform for Minecraft server hosting and services. The application provides a complete marketplace where users can purchase server hosting plans, custom development services, design assets, and support packages for their Minecraft communities.
+Seragon is a full-stack web application designed as a comprehensive platform for Minecraft server hosting and services under the Sterix parent company. The application provides a complete marketplace where users can purchase server hosting plans, custom development services, design assets, and support packages for their Minecraft communities with dynamic currency conversion based on market rates.
 
 ## System Architecture
 
@@ -147,7 +147,21 @@ Fuzz Labs is a full-stack web application designed as a comprehensive platform f
 - June 25, 2025: Implemented UPI payment system with arhaanjain@fam
 - June 25, 2025: Fixed color theme (#0a0a0a background, #00ff88 accent)
 - June 25, 2025: Added Netlify deployment configuration
+- July 15, 2025: Migration from Replit Agent to Replit environment
+- July 15, 2025: Rebranded from FuzzLabs to Seragon by Sterix
+- July 15, 2025: Updated team to only include Kiro (CTO) with contact email
+- July 15, 2025: Updated Discord link to https://discord.gg/b4f8WZy4R8
+- July 15, 2025: Updated partners to Sterix (parent company) and MineTree
+- July 15, 2025: Implemented dynamic currency conversion with market rates
+- July 15, 2025: Enhanced UI with better animations and improved color theme
+- July 15, 2025: Removed office locations from contact page
+- July 15, 2025: Added automatic currency detection and conversion for shop prices
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Branding: Seragon by Sterix (parent company)
+Discord: https://discord.gg/b4f8WZy4R8
+Team: Only Kiro (CTO) - kirodev.java@gmail.com
+Partners: Sterix and MineTree
+Currency: Dynamic conversion based on user location and market rates

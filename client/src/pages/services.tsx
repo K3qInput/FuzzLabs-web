@@ -2,9 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCart } from "@/components/cart/cart-provider";
 import { useNotifications } from "@/components/notifications/notification-provider";
 import { Service } from "@/lib/types";
+import { useCurrency } from "@/hooks/useCurrency";
+import { supportedCurrencies } from "@/lib/currency";
 import {
   Server,
   Code,
@@ -12,7 +15,8 @@ import {
   LifeBuoy,
   Globe,
   Settings,
-  Plus
+  Plus,
+  DollarSign
 } from "lucide-react";
 
 const categoryIcons = {
@@ -27,6 +31,7 @@ const categoryIcons = {
 export default function Services() {
   const { addItem } = useCart();
   const { addNotification } = useNotifications();
+  const { selectedCurrency, setSelectedCurrency, formatPrice, isLoading: currencyLoading } = useCurrency();
 
   const { data: services, isLoading, error } = useQuery({
     queryKey: ["/api/services"],
@@ -79,9 +84,32 @@ export default function Services() {
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Our Comprehensive <span className="gradient-text">Services</span>
           </h1>
-          <p className="text-lg text-gray-400 max-w-4xl mx-auto">
+          <p className="text-lg text-gray-400 max-w-4xl mx-auto mb-8">
             Build your perfect server package. Add services to your cart and checkout securely.
           </p>
+          
+          {/* Currency Selector */}
+          <div className="flex items-center justify-center gap-4 mb-8">
+            <div className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5 text-green-400" />
+              <span className="text-sm font-medium">Currency:</span>
+            </div>
+            <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
+              <SelectTrigger className="w-40 bg-gray-900 border-gray-700">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {supportedCurrencies.map((currency) => (
+                  <SelectItem key={currency.code} value={currency.code}>
+                    {currency.symbol} {currency.code}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {currencyLoading && (
+              <div className="loading-spinner" />
+            )}
+          </div>
         </div>
 
         <div className="space-y-16">
@@ -102,7 +130,7 @@ export default function Services() {
                         <CardTitle className="flex items-center justify-between">
                           <span>{service.name}</span>
                           <span className="text-lg font-bold text-green-400">
-                            ${parseFloat(service.price).toFixed(2)}
+                            {formatPrice(parseFloat(service.price))}
                             {service.isRecurring && (
                               <span className="text-sm text-gray-400">
                                 /{service.recurringPeriod}

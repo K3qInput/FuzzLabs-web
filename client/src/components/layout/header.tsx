@@ -68,7 +68,7 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <Box className="text-3xl text-transparent bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text" />
-            <span className="text-2xl font-bold text-white">Fuzz Labs</span>
+            <span className="text-2xl font-bold text-white">Seragon</span>
           </Link>
 
           {/* Desktop Navigation */}

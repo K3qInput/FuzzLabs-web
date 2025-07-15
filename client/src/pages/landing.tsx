@@ -22,7 +22,7 @@ export default function Landing() {
                 Server Solutions
               </h1>
               <p className="text-xl text-gray-300 mb-8 max-w-xl mx-auto md:mx-0">
-                From world-class server setups to stunning custom assets, Fuzz Labs is your one-stop solution for premium Minecraft experiences.
+                From world-class server setups to stunning custom assets, Seragon by Sterix is your one-stop solution for premium Minecraft experiences.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                 <Link href="/services">
@@ -55,7 +55,7 @@ export default function Landing() {
         <div className="max-w-screen-xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-4">
-              Why Choose <span className="gradient-text">Fuzz Labs</span>?
+              Why Choose <span className="gradient-text">Seragon</span>?
             </h2>
             <p className="text-lg text-gray-400 max-w-3xl mx-auto">
               We deliver exceptional Minecraft server solutions with cutting-edge technology and 24/7 support.
