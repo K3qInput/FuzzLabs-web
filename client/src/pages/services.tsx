@@ -32,7 +32,7 @@ export default function Services() {
   const { selectedCurrency, setSelectedCurrency, formatPrice, isLoading: currencyLoading } = useCurrency();
 
   const { data: services, isLoading, error } = useQuery({
-    queryKey: ["https://fuzzlabs-web.lastigbruh.repl.co/api/services"],
+    queryKey: ["/api/services"],
   });
 
   const handleAddToCart = (service: Service) => {
