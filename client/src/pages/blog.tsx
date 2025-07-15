@@ -16,69 +16,75 @@ export default function Blog() {
   const posts = [
     {
       id: 1,
-      title: "The Complete Guide to Minecraft Server Hosting in 2025",
-      excerpt: "Everything you need to know about setting up and managing a Minecraft server, from choosing the right hosting to optimizing performance.",
+      title: "Ultimate Guide to Minecraft Server Optimization",
+      excerpt: "Learn how to optimize your Minecraft server for maximum performance and reduced lag with these proven techniques from GitHub experts.",
       author: "Kiro",
       date: "2025-01-15",
       readTime: "8 min read",
-      category: "Server Hosting",
+      category: "Performance",
       categoryColor: "bg-blue-500",
-      image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=250&fit=crop"
+      image: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=400&h=250&fit=crop",
+      link: "https://github.com/YouHaveTrouble/minecraft-optimization"
     },
     {
       id: 2,
-      title: "10 Essential Plugins Every Minecraft Server Needs",
-      excerpt: "Discover the must-have plugins that will transform your server from basic to professional, all available for under $30.",
+      title: "Aikar Flags Optimization Guide",
+      excerpt: "Complete guide to optimizing Minecraft server JVM flags for better performance and reduced garbage collection.",
       author: "Kiro",
       date: "2025-01-12",
       readTime: "6 min read",
-      category: "Development",
+      category: "Performance",
       categoryColor: "bg-green-500",
-      image: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=400&h=250&fit=crop"
+      image: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=250&fit=crop",
+      link: "https://github.com/JewishLewish/minecraft-aikar-flags-optimization"
     },
     {
       id: 3,
-      title: "Creating Stunning Server Logos on a Budget",
-      excerpt: "Professional design tips and tricks for creating eye-catching logos that won't break the bank. Learn how to get premium results for less.",
+      title: "Paper Chan's Server Optimization Guide",
+      excerpt: "The most comprehensive and up-to-date server optimization guide by the PaperMC community with walkthrough explanations.",
       author: "Kiro",
       date: "2025-01-10",
-      readTime: "5 min read",
-      category: "Design",
+      readTime: "12 min read",
+      category: "Tutorial",
       categoryColor: "bg-purple-500",
-      image: "https://images.unsplash.com/photo-1559163499-413811fb2344?w=400&h=250&fit=crop"
+      image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=250&fit=crop",
+      link: "https://paper-chan.moe/paper-optimization/"
     },
     {
       id: 4,
-      title: "Server Security: Protecting Your Community",
-      excerpt: "Essential security measures every server owner should implement to protect their players and maintain a safe gaming environment.",
+      title: "Official PaperMC Documentation",
+      excerpt: "Complete official documentation for PaperMC server setup, configuration, and optimization from the source.",
       author: "Kiro",
       date: "2025-01-08",
-      readTime: "7 min read",
-      category: "Security",
+      readTime: "10 min read",
+      category: "Documentation",
       categoryColor: "bg-red-500",
-      image: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=250&fit=crop"
+      image: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=250&fit=crop",
+      link: "https://docs.papermc.io/"
     },
     {
       id: 5,
-      title: "Building Your First Custom Minecraft World",
-      excerpt: "Step-by-step guide to creating immersive custom worlds that will keep your players engaged for hours.",
+      title: "Minecraft Plugin Development Guide",
+      excerpt: "Learn to create custom plugins with official PaperMC development documentation and beginner-friendly tutorials.",
       author: "Kiro",
       date: "2025-01-05",
-      readTime: "9 min read",
-      category: "World Building",
+      readTime: "15 min read",
+      category: "Development",
       categoryColor: "bg-yellow-500",
-      image: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=250&fit=crop"
+      image: "https://images.unsplash.com/photo-1494522855154-9297ac14b55f?w=400&h=250&fit=crop",
+      link: "https://docs.papermc.io/paper/dev/"
     },
     {
       id: 6,
-      title: "Discord Integration: Connecting Your Communities",
-      excerpt: "How to seamlessly integrate your Discord server with your Minecraft server to create a unified community experience.",
+      title: "Server Security Best Practices",
+      excerpt: "Comprehensive security guide covering DDoS protection, authentication, and anti-cheat measures for Minecraft servers.",
       author: "Kiro",
       date: "2025-01-03",
-      readTime: "6 min read",
-      category: "Integration",
+      readTime: "8 min read",
+      category: "Security",
       categoryColor: "bg-indigo-500",
-      image: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=250&fit=crop"
+      image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop",
+      link: "https://pinehosting.com/blog/minecraft-server-security-7-tips-for-keeping-your-minecraft-server-secure/"
     }
   ];
 
@@ -168,7 +174,11 @@ export default function Blog() {
                     </div>
                   </div>
                   
-                  <Button variant="ghost" className="w-full group-hover:bg-green-500/20 group-hover:text-green-400 transition-colors">
+                  <Button 
+                    variant="ghost" 
+                    className="w-full group-hover:bg-green-500/20 group-hover:text-green-400 transition-colors"
+                    onClick={() => window.open(post.link, '_blank')}
+                  >
                     Read More
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>

@@ -142,7 +142,7 @@ async function seed() {
       categoryId: categories[3].id,
       name: 'Performance Optimization',
       description: 'Optimize your server for better performance and reduced lag.',
-      price: '6.99',
+      price: '2.33',
       isRecurring: false,
       isActive: true
     },
