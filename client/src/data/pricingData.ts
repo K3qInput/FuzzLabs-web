@@ -2,7 +2,7 @@ export const pricingPlans = [
   {
     id: 'starter',
     name: "Starter Package",
-    price: 19.99,
+    price: 8.99,
     description: "Perfect for getting started with your Minecraft server",
     popular: false,
     features: [
@@ -19,7 +19,7 @@ export const pricingPlans = [
   {
     id: 'pro',
     name: "Professional Package",
-    price: 29.99,
+    price: 15.99,
     description: "Enhanced features for growing servers",
     popular: true,
     features: [
@@ -34,20 +34,23 @@ export const pricingPlans = [
     ]
   },
   {
-    id: 'hosting',
-    name: "Hosting + Setup",
-    price: 24.99,
-    description: "Complete hosting solution with professional setup",
+    id: 'premium',
+    name: "Premium Complete",
+    price: 19.99,
+    originalPrice: 24.99,
+    discount: "20% OFF",
+    description: "Complete solution with everything included",
     popular: false,
     features: [
-      "1 Month Premium Hosting",
+      "Everything in Professional",
       "Complete Server Setup",
-      "Plugin Installation & Config",
-      "Discord Integration",
+      "Custom Website Template",
+      "Premium Discord Integration",
       "24/7 Server Monitoring",
       "DDoS Protection",
       "Daily Backups",
-      "Performance Optimization"
+      "Full Branding Package",
+      "Dedicated Support Manager"
     ]
   },
   {
@@ -58,13 +61,13 @@ export const pricingPlans = [
     popular: false,
     features: [
       "Fully Customized Setup",
-      "Flexible Budget Options",
+      "Budget-Friendly Options",
       "1-on-1 Consultation",
       "Custom Development",
       "Unique Game Mechanics",
       "Premium Branding",
       "Ongoing Support",
-      "Everything Under $30"
+      "All Services $2-20"
     ]
   }
 ];

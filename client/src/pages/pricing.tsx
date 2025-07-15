@@ -46,10 +46,10 @@ export default function Pricing() {
       <div className="container mx-auto px-4 py-20">
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Flexible <span className="gradient-text">Pricing</span>
+            Ultra-Affordable <span className="gradient-text">Pricing</span>
           </h1>
           <p className="text-lg text-gray-400 max-w-3xl mx-auto mb-8">
-            Choose a plan that fits your budget and ambitions. Prices converted to your local currency.
+            Ultra-affordable pricing from $2-20. Choose a plan that fits your budget perfectly.
           </p>
           
           {/* Currency Selector */}
@@ -95,8 +95,18 @@ export default function Pricing() {
                 <p className="text-gray-400 mb-6">{plan.description}</p>
                 <div className="text-5xl font-bold mb-6 text-white">
                   {plan.price === 0 ? 'Custom' : formatPrice(plan.price)}
+                  {plan.originalPrice && (
+                    <span className="text-2xl text-gray-400 line-through ml-2">
+                      {formatPrice(plan.originalPrice)}
+                    </span>
+                  )}
                   {plan.price > 0 && <span className="text-xl text-gray-400">/mo</span>}
                 </div>
+                {plan.discount && (
+                  <div className="text-green-400 font-semibold mb-4 text-lg">
+                    {plan.discount}
+                  </div>
+                )}
               </CardHeader>
 
               <CardContent className="p-0 flex-grow">
