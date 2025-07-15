@@ -75,39 +75,35 @@ export function AIChatbot({ isOpen, onToggle }: AIChatbotProps) {
                                 inputMessage.toLowerCase().includes('cost');
 
       if (isPriceComparison) {
-        const response = await apiRequest('/api/ai/price-comparison', {
-          method: 'POST',
-          body: { message: inputMessage }
-        });
+        const response = await apiRequest('POST', '/api/ai/price-comparison', { message: inputMessage });
+        const data = await response.json();
 
-        if (response.comparisonData) {
+        if (data.comparisonData) {
           const comparisonMessage: ChatMessage = {
             id: (Date.now() + 1).toString(),
             type: 'comparison',
-            content: response.message,
+            content: data.message,
             timestamp: new Date(),
-            comparisonData: response.comparisonData
+            comparisonData: data.comparisonData
           };
           setMessages(prev => [...prev, comparisonMessage]);
         } else {
           const botMessage: ChatMessage = {
             id: (Date.now() + 1).toString(),
             type: 'bot',
-            content: response.message,
+            content: data.message,
             timestamp: new Date()
           };
           setMessages(prev => [...prev, botMessage]);
         }
       } else {
-        const response = await apiRequest('/api/ai/chat', {
-          method: 'POST',
-          body: { message: inputMessage }
-        });
+        const response = await apiRequest('POST', '/api/ai/chat', { message: inputMessage });
+        const data = await response.json();
 
         const botMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
           type: 'bot',
-          content: response.message,
+          content: data.message,
           timestamp: new Date()
         };
         setMessages(prev => [...prev, botMessage]);
