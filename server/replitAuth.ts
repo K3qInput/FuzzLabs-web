@@ -129,13 +129,21 @@ export async function setupAuth(app: Express) {
 
   // --- DISCORD AUTHENTICATION SETUP ---
   if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
+    // Get the correct domain for callback URL
+    const domain = process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000';
+    const callbackURL = domain.includes('localhost') ? 
+      `http://${domain}/api/auth/discord/callback` : 
+      `https://${domain}/api/auth/discord/callback`;
+    
     // Discord OAuth routes
     app.get("/api/auth/discord", passport.authenticate('discord'));
+    
+    console.log('Discord callback URL:', callbackURL);
     
     passport.use('discord', new DiscordStrategy({
         clientID: process.env.DISCORD_CLIENT_ID,
         clientSecret: process.env.DISCORD_CLIENT_SECRET,
-        callbackURL: `https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'}/api/auth/discord/callback`,
+        callbackURL: callbackURL,
         scope: ['identify', 'email']
       },
       async (accessToken, refreshToken, profile, done) => {
