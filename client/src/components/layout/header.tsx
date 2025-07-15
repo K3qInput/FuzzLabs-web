@@ -38,8 +38,9 @@ export default function Header() {
     { name: "Home", href: "/" },
     { name: "Services", href: "/services" },
     { name: "Pricing", href: "/pricing" },
+    { name: "About", href: "/about" },
+    { name: "Blog", href: "/blog" },
     { name: "Team", href: "/team" },
-    { name: "Partners", href: "/partners" },
     { name: "Contact", href: "/contact" },
   ];
 

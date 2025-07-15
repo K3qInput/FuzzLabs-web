@@ -85,13 +85,13 @@ export default function Services() {
   }, {}) || {};
 
   return (
-    <div className="min-h-screen py-20 px-6 bg-black">
+    <div className="min-h-screen py-20 px-6 bg-gray-900">
       <div className="max-w-screen-xl mx-auto">
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Our Comprehensive <span className="gradient-text">Services</span>
           </h1>
-          <p className="text-lg text-gray-400 max-w-4xl mx-auto mb-8">
+          <p className="text-lg text-gray-200 max-w-4xl mx-auto mb-8">
             Build your perfect server package. Add services to your cart and checkout securely.
           </p>
           
@@ -139,7 +139,7 @@ export default function Services() {
                           <span className="text-lg font-bold text-green-400">
                             {formatPrice(parseFloat(service.price))}
                             {service.isRecurring && (
-                              <span className="text-sm text-gray-400">
+                              <span className="text-sm text-gray-200">
                                 /{service.recurringPeriod}
                               </span>
                             )}
@@ -147,7 +147,7 @@ export default function Services() {
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-gray-400 mb-4">
+                        <p className="text-gray-200 mb-4">
                           {service.description || "Professional service tailored to your needs."}
                         </p>
                         
