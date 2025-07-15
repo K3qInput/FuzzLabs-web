@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertOrderSchema, insertOrderItemSchema } from "@shared/schema";
 import { z } from "zod";
+import { comparePricing, getChatResponse } from "./aiChatbot";
 
 // UPI Payment Configuration
 const UPI_ID = "arhaanjain@fam";
@@ -314,6 +315,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching admin stats:", error);
       res.status(500).json({ message: "Failed to fetch admin stats" });
+    }
+  });
+
+  // AI Chatbot routes
+  app.post('/api/ai/chat', async (req, res) => {
+    try {
+      const { message } = req.body;
+      
+      if (!message) {
+        return res.status(400).json({ message: "Message is required" });
+      }
+
+      const response = await getChatResponse(message);
+      res.json({ message: response });
+    } catch (error) {
+      console.error("AI chat error:", error);
+      res.status(500).json({ message: "Failed to get AI response" });
+    }
+  });
+
+  app.post('/api/ai/price-comparison', async (req, res) => {
+    try {
+      const { message } = req.body;
+      
+      if (!message) {
+        return res.status(400).json({ message: "Message is required" });
+      }
+
+      // Try to extract service information from the message
+      const services = await storage.getServices();
+      let matchedService = null;
+      
+      // Simple matching - look for service names in the message
+      for (const service of services) {
+        if (message.toLowerCase().includes(service.name.toLowerCase())) {
+          matchedService = service;
+          break;
+        }
+      }
+
+      if (matchedService) {
+        const priceNumber = parseFloat(matchedService.price);
+        const comparisonData = await comparePricing(
+          matchedService.name,
+          priceNumber,
+          matchedService.description || ""
+        );
+        
+        res.json({
+          message: `Here's a pricing comparison for ${matchedService.name}:`,
+          comparisonData
+        });
+      } else {
+        // If no specific service found, provide general pricing info
+        const response = await getChatResponse(
+          message,
+          "The user is asking about pricing comparisons. Provide helpful information about our competitive pricing."
+        );
+        res.json({ message: response });
+      }
+    } catch (error) {
+      console.error("AI price comparison error:", error);
+      res.status(500).json({ message: "Failed to get pricing comparison" });
     }
   });
 

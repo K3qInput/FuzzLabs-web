@@ -23,6 +23,7 @@ import About from "@/pages/about";
 import Blog from "@/pages/blog";
 import Testimonials from "@/pages/testimonials";
 import NotFound from "@/pages/not-found";
+import { AIChatToggle } from "@/components/ai-chat/ai-chatbot";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -53,6 +54,7 @@ function Router() {
         </Switch>
       </main>
       <Footer />
+      <AIChatToggle />
     </div>
   );
 }
