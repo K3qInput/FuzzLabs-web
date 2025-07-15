@@ -3,9 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useCart } from "@/components/cart/cart-provider";
 import { useNotifications } from "@/components/notifications/notification-provider";
-import { useAuth } from "@/hooks/useAuth";
 import { Service } from "@/lib/types";
 import { useCurrency } from "@/hooks/useCurrency";
 import { supportedCurrencies } from "@/lib/currency";
@@ -30,9 +28,7 @@ const categoryIcons = {
 };
 
 export default function Services() {
-  const { addItem } = useCart();
   const { addNotification } = useNotifications();
-  const { isAuthenticated } = useAuth();
   const { selectedCurrency, setSelectedCurrency, formatPrice, isLoading: currencyLoading } = useCurrency();
 
   const { data: services, isLoading, error } = useQuery({
@@ -40,14 +36,10 @@ export default function Services() {
   });
 
   const handleAddToCart = (service: Service) => {
-    addItem({
-      id: service.id,
-      name: service.name,
-      price: parseFloat(service.price),
-      isRecurring: service.isRecurring,
-      recurringPeriod: service.recurringPeriod,
-    });
-    addNotification(`${service.name} added to cart!`, "success");
+    const message = `Hi! I'm interested in purchasing "${service.name}" (${formatPrice(parseFloat(service.price))}${service.isRecurring ? ` per ${service.recurringPeriod}` : ''}). Can you help me get started?`;
+    const discordUrl = `https://discord.com/users/1129755081416388750`;
+    window.open(discordUrl, '_blank');
+    addNotification(`Redirecting to Discord for ${service.name}!`, "success");
   };
 
   if (isLoading) {
@@ -151,7 +143,7 @@ export default function Services() {
                           className="w-full btn-primary"
                         >
                           <Plus className="mr-2 h-4 w-4" />
-                          Add to Cart
+                          Contact for Purchase
                         </Button>
                       </CardContent>
                     </Card>
