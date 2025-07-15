@@ -63,12 +63,12 @@ export default function Header() {
 
   return (
     <>
-      <header className="bg-black/80 backdrop-blur-sm py-4 px-6 sticky top-0 z-50 border-b border-gray-800">
+      <header className="bg-black/90 backdrop-blur-lg py-4 px-6 sticky top-0 z-50 border-b border-gray-800/50 transition-all duration-300">
         <div className="max-w-screen-xl mx-auto flex justify-between items-center">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <Box className="text-3xl text-transparent bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text" />
-            <span className="text-2xl font-bold text-white">Seragon</span>
+          <Link href="/" className="flex items-center space-x-2 group">
+            <Box className="text-3xl text-transparent bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text transform group-hover:scale-110 transition-transform duration-300" />
+            <span className="text-2xl font-bold gradient-text">Seragon</span>
           </Link>
 
           {/* Desktop Navigation */}

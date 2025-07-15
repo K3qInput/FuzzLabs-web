@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getExchangeRate, formatCurrency, detectUserCurrency } from '@/lib/currency';
 
 export function useCurrency() {
@@ -6,26 +6,26 @@ export function useCurrency() {
   const [exchangeRates, setExchangeRates] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(false);
 
+  const fetchExchangeRate = useCallback(async (currency: string) => {
+    if (currency === 'USD') {
+      setExchangeRates(prev => ({ ...prev, USD: 1 }));
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const rate = await getExchangeRate('USD', currency);
+      setExchangeRates(prev => ({ ...prev, [currency]: rate }));
+    } catch (error) {
+      console.error('Error fetching exchange rate:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    const fetchExchangeRate = async () => {
-      if (selectedCurrency === 'USD') {
-        setExchangeRates(prev => ({ ...prev, USD: 1 }));
-        return;
-      }
-
-      setIsLoading(true);
-      try {
-        const rate = await getExchangeRate('USD', selectedCurrency);
-        setExchangeRates(prev => ({ ...prev, [selectedCurrency]: rate }));
-      } catch (error) {
-        console.error('Error fetching exchange rate:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchExchangeRate();
-  }, [selectedCurrency]);
+    fetchExchangeRate(selectedCurrency);
+  }, [selectedCurrency, fetchExchangeRate]);
 
   const convertPrice = (usdPrice: number, targetCurrency: string = selectedCurrency): number => {
     const rate = exchangeRates[targetCurrency] || 1;

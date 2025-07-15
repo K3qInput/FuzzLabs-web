@@ -107,7 +107,7 @@ export default function Services() {
               </SelectContent>
             </Select>
             {currencyLoading && (
-              <div className="loading-spinner" />
+              <LoadingSpinner size="sm" />
             )}
           </div>
         </div>
