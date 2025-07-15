@@ -1,20 +1,32 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useCart } from "@/components/cart/cart-provider";
 import { useNotifications } from "@/components/notifications/notification-provider";
+import { useAuth } from "@/hooks/useAuth";
+import { useCurrency } from "@/hooks/useCurrency";
+import { supportedCurrencies } from "@/lib/currency";
 import { pricingPlans } from "@/data/pricingData";
-import { Check, X } from "lucide-react";
+import { Check, X, DollarSign } from "lucide-react";
 
 
 
 export default function Pricing() {
   const { addItem } = useCart();
   const { addNotification } = useNotifications();
+  const { isAuthenticated } = useAuth();
+  const { selectedCurrency, setSelectedCurrency, formatPrice, isLoading: currencyLoading } = useCurrency();
 
   const handleSelectPlan = (plan: typeof pricingPlans[0]) => {
     if (plan.price === 0) {
-      window.open("https://discord.gg/t3TB5nYvJT", "_blank");
+      window.open("https://discord.gg/b4f8WZy4R8", "_blank");
+      return;
+    }
+    
+    if (!isAuthenticated) {
+      addNotification("Please log in to add items to cart", "error");
       return;
     }
     
@@ -36,9 +48,32 @@ export default function Pricing() {
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Flexible <span className="gradient-text">Pricing</span>
           </h1>
-          <p className="text-lg text-gray-400 max-w-3xl mx-auto">
-            Choose a plan that fits your budget and ambitions. All prices in USD.
+          <p className="text-lg text-gray-400 max-w-3xl mx-auto mb-8">
+            Choose a plan that fits your budget and ambitions. Prices converted to your local currency.
           </p>
+          
+          {/* Currency Selector */}
+          <div className="flex items-center justify-center gap-4 mb-8">
+            <div className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5 text-green-400" />
+              <span className="text-sm font-medium">Currency:</span>
+            </div>
+            <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
+              <SelectTrigger className="w-40 bg-gray-900 border-gray-700">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {supportedCurrencies.map((currency) => (
+                  <SelectItem key={currency.code} value={currency.code}>
+                    {currency.symbol} {currency.code}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {currencyLoading && (
+              <LoadingSpinner size="sm" />
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
@@ -59,7 +94,7 @@ export default function Pricing() {
                 <CardTitle className="text-2xl font-bold text-white mb-2">{plan.name}</CardTitle>
                 <p className="text-gray-400 mb-6">{plan.description}</p>
                 <div className="text-5xl font-bold mb-6 text-white">
-                  {plan.price === 0 ? 'Custom' : `$${plan.price}`}
+                  {plan.price === 0 ? 'Custom' : formatPrice(plan.price)}
                   {plan.price > 0 && <span className="text-xl text-gray-400">/mo</span>}
                 </div>
               </CardHeader>

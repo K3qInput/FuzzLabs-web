@@ -5,6 +5,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCart } from "@/components/cart/cart-provider";
 import { useNotifications } from "@/components/notifications/notification-provider";
+import { useAuth } from "@/hooks/useAuth";
 import { Service } from "@/lib/types";
 import { useCurrency } from "@/hooks/useCurrency";
 import { supportedCurrencies } from "@/lib/currency";
@@ -31,6 +32,7 @@ const categoryIcons = {
 export default function Services() {
   const { addItem } = useCart();
   const { addNotification } = useNotifications();
+  const { isAuthenticated } = useAuth();
   const { selectedCurrency, setSelectedCurrency, formatPrice, isLoading: currencyLoading } = useCurrency();
 
   const { data: services, isLoading, error } = useQuery({
@@ -38,6 +40,11 @@ export default function Services() {
   });
 
   const handleAddToCart = (service: Service) => {
+    if (!isAuthenticated) {
+      addNotification("Please log in to add items to cart", "error");
+      return;
+    }
+    
     addItem({
       id: service.id,
       name: service.name,

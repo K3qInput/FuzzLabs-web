@@ -8,10 +8,8 @@ import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
 
-// NEW: Import the Discord Strategy
+// Discord Strategy only - Google removed as requested
 import { Strategy as DiscordStrategy } from 'passport-discord';
-// NEW: Import the Google Strategy
-import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 
 
 if (!process.env.REPLIT_DOMAINS) {
@@ -23,10 +21,7 @@ if (!process.env.DISCORD_CLIENT_ID || !process.env.DISCORD_CLIENT_SECRET) {
   console.warn("Discord environment variables (DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET) are not fully provided. Discord authentication may not work.");
 }
 
-// Ensure Google Client ID and Secret are available
-if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-    console.warn("Google environment variables (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET) are not fully provided. Google authentication may not work.");
-}
+// Google authentication removed as requested
 
 
 const getOidcConfig = memoize(
@@ -140,9 +135,9 @@ export async function setupAuth(app: Express) {
         // THIS WAS THE PRIMARY FIX:
         // This MUST be the exact Redirect URI you registered in your Discord Developer Portal
         // and the `redirect_uri` in your frontend Discord auth URL.
-        callbackURL: `https://fuzzlabs.netlify.app/api/callback`,
+        callbackURL: `https://seragonservices.netlify.app/api/callback`,
         // Scopes for basic user authentication: identify (user details), email (user's email)
-        scope: ['identify', 'email']
+        scope: ['email']
       },
       // The verify function for Discord Strategy
       async (accessToken, refreshToken, profile, done) => {
@@ -171,34 +166,7 @@ export async function setupAuth(app: Express) {
     ));
   }
 
-  // --- GOOGLE AUTHENTICATION SETUP ---
-  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-    passport.use(new GoogleStrategy({
-        clientID: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: `https://fuzzlabs.netlify.app/api/auth/google/callback`, // Your Google callback URL
-        scope: ['profile', 'email'] // Basic scopes for Google authentication
-      },
-      async (accessToken, refreshToken, profile, done) => {
-        const userClaims = {
-          sub: profile.id,
-          email: profile.emails && profile.emails.length > 0 ? profile.emails[0].value : null,
-          first_name: profile.name?.givenName,
-          last_name: profile.name?.familyName,
-          profile_image_url: profile.photos && profile.photos.length > 0 ? profile.photos[0].value : null,
-        };
-        const user = {
-          claims: userClaims,
-          access_token: accessToken,
-          refresh_token: refreshToken,
-          expires_at: Math.floor(Date.now() / 1000) + 3600 // Google tokens typically last 1 hour
-        };
-
-        await upsertUser(userClaims);
-        return done(null, user);
-      }
-    ));
-  }
+  // Google authentication removed as requested
 
 
   // --- PASSPORT SERIALIZATION/DESERIALIZATION ---

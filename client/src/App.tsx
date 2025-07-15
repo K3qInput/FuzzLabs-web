@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { CartProvider } from "@/components/cart/cart-provider";
 import { NotificationProvider } from "@/components/notifications/notification-provider";
 import Header from "@/components/layout/header";
+import Fireflies from "@/components/ui/fireflies";
 import Landing from "@/pages/landing";
 import Home from "@/pages/home";
 import Services from "@/pages/services";
@@ -24,26 +25,18 @@ function Router() {
 
   return (
     <div className="min-h-screen bg-black text-white">
+      <Fireflies />
       <Header />
       <main>
         <Switch>
-          {isLoading || !isAuthenticated ? (
+          <Route path="/" component={isAuthenticated ? Home : Landing} />
+          <Route path="/services" component={Services} />
+          <Route path="/pricing" component={Pricing} />
+          <Route path="/team" component={Team} />
+          <Route path="/partners" component={Partners} />
+          <Route path="/contact" component={Contact} />
+          {isAuthenticated && (
             <>
-              <Route path="/" component={Landing} />
-              <Route path="/services" component={Services} />
-              <Route path="/pricing" component={Pricing} />
-              <Route path="/team" component={Team} />
-              <Route path="/partners" component={Partners} />
-              <Route path="/contact" component={Contact} />
-            </>
-          ) : (
-            <>
-              <Route path="/" component={Home} />
-              <Route path="/services" component={Services} />
-              <Route path="/pricing" component={Pricing} />
-              <Route path="/team" component={Team} />
-              <Route path="/partners" component={Partners} />
-              <Route path="/contact" component={Contact} />
               <Route path="/dashboard" component={Dashboard} />
               <Route path="/admin" component={Admin} />
               <Route path="/checkout" component={Checkout} />
