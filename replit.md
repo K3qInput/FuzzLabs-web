@@ -167,6 +167,7 @@ Seragon is a full-stack web application designed as a comprehensive platform for
 - July 15, 2025: Made pricing ultra-affordable ($2-20) with 20% discount on premium package
 - July 15, 2025: Enhanced color theme for better text visibility and readability
 - July 15, 2025: Added 21 total services with competitive pricing similar to BuiltByBit marketplace
+- July 15, 2025: Reverted firefly animation to original simple green dots after user feedback
 - July 15, 2025: Completed migration from Replit Agent to Replit environment with PostgreSQL database
 - July 15, 2025: Fixed services page to work without authentication requirement
 - July 15, 2025: Database seeded with 21 services across 6 categories for immediate use
