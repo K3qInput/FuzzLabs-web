@@ -129,41 +129,47 @@ export async function setupAuth(app: Express) {
 
   // --- DISCORD AUTHENTICATION SETUP ---
   if (process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET) {
+    // Discord OAuth routes
+    app.get("/api/auth/discord", passport.authenticate('discord'));
+    
     passport.use('discord', new DiscordStrategy({
         clientID: process.env.DISCORD_CLIENT_ID,
         clientSecret: process.env.DISCORD_CLIENT_SECRET,
-        // THIS WAS THE PRIMARY FIX:
-        // This MUST be the exact Redirect URI you registered in your Discord Developer Portal
-        // and the `redirect_uri` in your frontend Discord auth URL.
-        callbackURL: `https://seragonservices.netlify.app/api/callback`,
-        // Scopes for basic user authentication: identify (user details), email (user's email)
-        scope: ['email']
+        callbackURL: `https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'}/api/auth/discord/callback`,
+        scope: ['identify', 'email']
       },
-      // The verify function for Discord Strategy
       async (accessToken, refreshToken, profile, done) => {
-        // 'profile' object from Discord will contain user data based on requested scopes.
-        // You'll need to adapt your upsertUser or create a new function if Discord's profile
-        // structure is different from Replit's claims.
-        const userClaims = {
-            sub: profile.id, // Discord user ID
-            email: profile.email,
-            first_name: profile.username, // Using username as first_name
-            last_name: profile.discriminator, // Using discriminator as last_name
+        try {
+          const userClaims = {
+            sub: profile.id,
+            email: profile.email || null,
+            first_name: profile.username || profile.global_name || 'Unknown',
+            last_name: profile.discriminator || '',
             profile_image_url: profile.avatar ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png` : null,
-            // Add other claims you need/have from Discord profile
-        };
-        
-        const user = {
-          claims: userClaims,
-          access_token: accessToken,
-          refresh_token: refreshToken,
-          expires_at: Math.floor(Date.now() / 1000) + 3600 // Discord tokens usually last 1 hour
-        };
+          };
+          
+          const user = {
+            claims: userClaims,
+            access_token: accessToken,
+            refresh_token: refreshToken,
+            expires_at: Math.floor(Date.now() / 1000) + 3600
+          };
 
-        await upsertUser(userClaims); // Upsert user to your DB
-        return done(null, user);
+          await upsertUser(userClaims);
+          return done(null, user);
+        } catch (error) {
+          console.error('Discord auth error:', error);
+          return done(error, null);
+        }
       }
     ));
+    
+    app.get("/api/auth/discord/callback", 
+      passport.authenticate('discord', { failureRedirect: '/login' }),
+      (req, res) => {
+        res.redirect('/dashboard');
+      }
+    );
   }
 
   // Google authentication removed as requested
@@ -202,91 +208,18 @@ export async function setupAuth(app: Express) {
     }
   });
 
-  // Cross-domain OAuth bridge for Netlify callbacks
-  app.get("/api/oauth/bridge", (req, res) => {
-    const provider = typeof req.query.provider === 'string' ? req.query.provider : '';
-    const code = typeof req.query.code === 'string' ? req.query.code : '';
-    const state = typeof req.query.state === 'string' ? req.query.state : '';
-    const error = typeof req.query.error === 'string' ? req.query.error : '';
-    
-    if (error) {
-      return res.redirect(`/api/login?error=${encodeURIComponent(error)}`);
-    }
-    
-    if (provider === 'discord' && code) {
-      // Create a form that posts to the Discord callback
-      return res.send(`
-        <!DOCTYPE html>
-        <html>
-        <head><title>Authenticating...</title></head>
-        <body>
-          <script>
-            window.location.href = '/api/auth/discord/callback?code=${encodeURIComponent(code)}';
-          </script>
-        </body>
-        </html>
-      `);
-    }
-    
-    if (provider === 'google' && code) {
-      // Create a form that posts to the Google callback
-      return res.send(`
-        <!DOCTYPE html>
-        <html>
-        <head><title>Authenticating...</title></head>
-        <body>
-          <script>
-            window.location.href = '/api/auth/google/callback?code=${encodeURIComponent(code)}';
-          </script>
-        </body>
-        </html>
-      `);
-    }
-    
-    res.redirect('/api/login');
-  });
-
-  // --- DISCORD AUTH ROUTES ---
-  // Route to initiate Discord OAuth flow
-  app.get('/api/auth/discord', passport.authenticate('discord')); // Use 'discord' strategy name
-
-  // Callback route for Discord OAuth
-  app.get('/api/auth/discord/callback',
-      passport.authenticate('discord', { failureRedirect: '/api/login' }), // Use 'discord' strategy name
-      function(req, res) {
-          // Successful Discord authentication, redirect to dashboard or home
-          res.redirect('/dashboard');
-      }
-  );
-
-  // --- GOOGLE AUTH ROUTES ---
-  // Route to initiate Google OAuth flow
-  app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-
-  // Callback route for Google OAuth
-  app.get('/api/auth/google/callback',
-      passport.authenticate('google', { failureRedirect: '/api/login' }),
-      function(req, res) {
-          // Successful Google authentication, redirect to dashboard or home
-          res.redirect('/dashboard');
-      }
-  );
-
-
-  // --- LOGOUT ROUTE ---
+  // Logout route
   app.get("/api/logout", (req, res) => {
     req.logout((err) => {
       if (err) {
         console.error("Logout error:", err);
-        return res.status(500).send("Logout failed");
       }
-      // Replit OIDC specific logout
-      res.redirect(
-        client.buildEndSessionUrl(config, {
-          client_id: process.env.REPL_ID!,
-          post_logout_redirect_uri: `${req.protocol}://${req.hostname}`,
-        }).href
-      );
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Session destroy error:", err);
+        }
+        res.redirect("/");
+      });
     });
   });
 }

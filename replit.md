@@ -156,6 +156,10 @@ Seragon is a full-stack web application designed as a comprehensive platform for
 - July 15, 2025: Enhanced UI with better animations and improved color theme
 - July 15, 2025: Removed office locations from contact page
 - July 15, 2025: Added automatic currency detection and conversion for shop prices
+- July 15, 2025: Modernized authentication system - removed Google OAuth, kept Discord + Replit
+- July 15, 2025: Fixed Discord authentication runtime errors and endpoint configuration
+- July 15, 2025: Made services page accessible without login requirement
+- July 15, 2025: Completed migration from Replit Agent to Replit environment
 
 ## User Preferences
 

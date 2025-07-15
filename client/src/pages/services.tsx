@@ -41,7 +41,7 @@ export default function Services() {
 
   const handleAddToCart = (service: Service) => {
     if (!isAuthenticated) {
-      addNotification("Please log in to add items to cart", "error");
+      addNotification("Please log in to add items to cart", "warning");
       return;
     }
     

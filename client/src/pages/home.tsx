@@ -99,7 +99,7 @@ export default function Home() {
         <div className="max-w-screen-xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-4">
-              Why Choose <span className="gradient-text">Fuzz Labs</span>?
+              Why Choose <span className="gradient-text">Seragon</span>?
             </h2>
             <p className="text-lg text-gray-400 max-w-3xl mx-auto">
               We deliver exceptional Minecraft server solutions with cutting-edge technology and 24/7 support.
