@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const genAI = new GoogleGenerativeAI("AIzaSyAc3TXrZktk2LC94iJZepkHowa7JpKk1m0");
 
 export interface PriceComparison {
   service: string;
@@ -17,7 +17,7 @@ export interface PriceComparison {
 
 export async function comparePricing(serviceName: string, servicePrice: number, serviceDescription: string): Promise<PriceComparison> {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     
     const prompt = `
 You are a pricing analysis expert for Minecraft server services. Analyze the following service and compare it with competitors on platforms like BuiltByBit, Polymart, MC-Market, and Spigot.
@@ -84,7 +84,7 @@ Focus on accuracy and provide realistic market data based on current Minecraft s
 
 export async function getChatResponse(userMessage: string, context?: string): Promise<string> {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     
     const systemPrompt = `
 You are Seragon's AI assistant, specializing in Minecraft server services and pricing. You help users understand our services and compare them with competitors.
